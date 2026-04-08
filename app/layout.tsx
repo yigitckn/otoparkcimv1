@@ -7,7 +7,7 @@ const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'Otoparkçım - İstanbul Otopark Bulucu',
+  title: 'Otoparkçım - Park Yeri Bulmanın En Kolay Yolu',
   description: 'İstanbul\'da en uygun otoparkları kolayca bulun. Anlık müsaitlik, fiyat karşılaştırma ve kolay rezervasyon.',
   generator: 'v0.app',
   icons: {

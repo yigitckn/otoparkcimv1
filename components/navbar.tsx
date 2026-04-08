@@ -33,7 +33,7 @@ export function Navbar() {
             Ana Sayfa
           </Link>
           <Link 
-            href="/app" 
+            href="/dashboard" 
             className="text-foreground/80 hover:text-[#2f80ed] transition-colors font-medium"
           >
             Otopark Bul
