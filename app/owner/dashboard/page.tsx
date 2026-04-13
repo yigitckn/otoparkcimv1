@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Plus, MapPin, Car, TrendingUp, Clock } from 'lucide-react'
+import { Plus, MapPin, Car, Clock } from 'lucide-react'
 
 interface Parking {
   id: string
@@ -29,6 +29,7 @@ export default function OwnerDashboardPage() {
   const [reservations, setReservations] = useState<Reservation[]>([])
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState<any>(null)
+  const [updating, setUpdating] = useState<string | null>(null)
   
   const router = useRouter()
   const supabase = createClient()
@@ -36,6 +37,28 @@ export default function OwnerDashboardPage() {
   useEffect(() => {
     checkUserAndLoad()
   }, [])
+
+  useEffect(() => {
+    if (!user) return
+
+    const channel = supabase
+      .channel('parking-updates')
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'parkings',
+        filter: `owner_id=eq.${user.id}`
+      }, (payload) => {
+        setParkings(prev => prev.map(p => 
+          p.id === payload.new.id ? { ...p, ...payload.new } : p
+        ))
+      })
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [user])
 
   const checkUserAndLoad = async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -85,6 +108,23 @@ export default function OwnerDashboardPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const updateStatus = async (parkingId: string, newStatus: string) => {
+    setUpdating(parkingId)
+
+    const { error } = await supabase
+      .from('parkings')
+      .update({ status: newStatus })
+      .eq('id', parkingId)
+
+    if (!error) {
+      setParkings(prev => prev.map(p => 
+        p.id === parkingId ? { ...p, status: newStatus } : p
+      ))
+    }
+
+    setUpdating(null)
   }
 
   const totalCapacity = parkings.reduce((sum, p) => sum + (p.capacity || 0), 0)
@@ -167,7 +207,7 @@ export default function OwnerDashboardPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50">
-            <h2 className="text-lg font-bold text-white mb-4">Otoparklarım</h2>
+            <h2 className="text-lg font-bold text-white mb-4">Otoparklarım - Durum Yönetimi</h2>
             {parkings.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-slate-400 mb-4">Henüz otopark eklemediniz</p>
@@ -180,17 +220,62 @@ export default function OwnerDashboardPage() {
                 </Link>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {parkings.map((parking) => (
-                  <div key={parking.id} className="flex items-center justify-between p-4 bg-slate-900/50 rounded-xl border border-slate-700/30">
-                    <div>
-                      <h3 className="font-semibold text-white">{parking.name}</h3>
-                      <p className="text-sm text-slate-400">{parking.address}</p>
+                  <div key={parking.id} className="p-4 bg-slate-900/50 rounded-xl border border-slate-700/30">
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <h3 className="font-semibold text-white">{parking.name}</h3>
+                        <p className="text-sm text-slate-400">{parking.address}</p>
+                      </div>
+                      <span className="text-cyan-400 font-bold">{parking.hourly_price} TL/saat</span>
                     </div>
-                    <div className="text-right">
-                      <p className="text-cyan-400 font-bold">{parking.hourly_price} TL/saat</p>
-                      <p className="text-xs text-slate-500">{parking.capacity} araçlık</p>
+                    
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => updateStatus(parking.id, 'available')}
+                        disabled={updating === parking.id}
+                        className={`flex-1 py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2 ${
+                          parking.status === 'available' 
+                            ? 'bg-green-500 text-white shadow-lg shadow-green-500/30' 
+                            : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                        }`}
+                      >
+                        <span className="w-2 h-2 rounded-full bg-current"></span>
+                        Müsait
+                      </button>
+                      <button
+                        onClick={() => updateStatus(parking.id, 'limited')}
+                        disabled={updating === parking.id}
+                        className={`flex-1 py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2 ${
+                          parking.status === 'limited' 
+                            ? 'bg-yellow-500 text-white shadow-lg shadow-yellow-500/30' 
+                            : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                        }`}
+                      >
+                        <span className="w-2 h-2 rounded-full bg-current"></span>
+                        Az Yer
+                      </button>
+                      <button
+                        onClick={() => updateStatus(parking.id, 'full')}
+                        disabled={updating === parking.id}
+                        className={`flex-1 py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2 ${
+                          parking.status === 'full' 
+                            ? 'bg-red-500 text-white shadow-lg shadow-red-500/30' 
+                            : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                        }`}
+                      >
+                        <span className="w-2 h-2 rounded-full bg-current"></span>
+                        Dolu
+                      </button>
                     </div>
+                    
+                    {updating === parking.id && (
+                      <div className="flex items-center justify-center mt-3">
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-cyan-500"></div>
+                        <span className="text-cyan-400 text-sm ml-2">Güncelleniyor...</span>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

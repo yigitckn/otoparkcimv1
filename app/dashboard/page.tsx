@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Parking } from '@/types'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Search, MapPin, Bell } from 'lucide-react'
+import { Search, MapPin, Bell, X, Star, Clock, Shield, Car, Zap, Droplets, Wifi, ChevronLeft, ChevronRight, Navigation } from 'lucide-react'
 import dynamic from 'next/dynamic'
 
 const Map = dynamic(() => import('@/components/map/Map'), { ssr: false })
@@ -13,12 +13,15 @@ const Map = dynamic(() => import('@/components/map/Map'), { ssr: false })
 export default function DashboardPage() {
   const [parkings, setParkings] = useState<Parking[]>([])
   const [selectedParking, setSelectedParking] = useState<Parking | null>(null)
+  const [showDetail, setShowDetail] = useState(false)
   const [activeReservation, setActiveReservation] = useState<any>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [filter, setFilter] = useState('all')
   const [loading, setLoading] = useState(true)
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null)
   const [userName, setUserName] = useState('')
+  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
+  const [parkingReviews, setParkingReviews] = useState<any[]>([])
 
   const supabase = createClient()
   const router = useRouter()
@@ -35,6 +38,27 @@ export default function DashboardPage() {
   useEffect(() => {
     checkUserAndLoadData()
   }, [])
+  useEffect(() => {
+  const channel = supabase
+    .channel('user-parking-updates')
+    .on('postgres_changes', {
+      event: 'UPDATE',
+      schema: 'public',
+      table: 'parkings'
+    }, (payload) => {
+      setParkings(prev => prev.map(p => 
+        p.id === payload.new.id ? { ...p, ...payload.new } : p
+      ))
+      if (selectedParking?.id === payload.new.id) {
+        setSelectedParking(prev => prev ? { ...prev, ...payload.new } : null)
+      }
+    })
+    .subscribe()
+
+  return () => {
+    supabase.removeChannel(channel)
+  }
+}, [selectedParking?.id])
 
   const checkUserAndLoadData = async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -81,6 +105,23 @@ export default function DashboardPage() {
     } catch (e) {
       console.error('Rezervasyon yüklenemedi')
     }
+  }
+
+  const loadParkingReviews = async (parkingId: string) => {
+    const { data } = await supabase
+      .from('reviews')
+      .select('*, profiles(full_name)')
+      .eq('parking_id', parkingId)
+      .order('created_at', { ascending: false })
+      .limit(5)
+    setParkingReviews(data || [])
+  }
+
+  const handleSelectParking = async (parking: Parking) => {
+    setSelectedParking(parking)
+    setShowDetail(true)
+    setCurrentPhotoIndex(0)
+    await loadParkingReviews(parking.id)
   }
 
   const handleCancel = async () => {
@@ -147,6 +188,7 @@ export default function DashboardPage() {
       if (res.ok) {
         alert('Rezervasyon yapıldı!')
         setSelectedParking(null)
+        setShowDetail(false)
         loadReservation()
       } else {
         const data = await res.json()
@@ -157,10 +199,37 @@ export default function DashboardPage() {
     }
   }
 
-  const closeCard = () => setSelectedParking(null)
+  const closeDetail = () => {
+    setShowDetail(false)
+    setSelectedParking(null)
+  }
 
   const getMapsUrl = (lat: number, lng: number) => {
     return 'https://www.google.com/maps/dir/?api=1&destination=' + lat + ',' + lng
+  }
+
+  const getFeatureIcon = (feature: string) => {
+    const icons: { [key: string]: any } = {
+      'covered': Shield,
+      'security': Shield,
+      'valet': Car,
+      'ev_charging': Zap,
+      'car_wash': Droplets,
+      'wifi': Wifi,
+    }
+    return icons[feature] || Shield
+  }
+
+  const getFeatureLabel = (feature: string) => {
+    const labels: { [key: string]: string } = {
+      'covered': 'Kapalı Otopark',
+      'security': '7/24 Güvenlik',
+      'valet': 'Vale Hizmeti',
+      'ev_charging': 'Elektrikli Şarj',
+      'car_wash': 'Oto Yıkama',
+      'wifi': 'Ücretsiz WiFi',
+    }
+    return labels[feature] || feature
   }
 
   if (loading) {
@@ -176,9 +245,7 @@ export default function DashboardPage() {
       <header className="bg-white border-b border-gray-200 px-4 py-3">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
-              <span className="text-white font-bold text-lg">P</span>
-            </div>
+            <img src="/images/logo.png" alt="Otoparkçım" className="w-10 h-10 rounded-xl object-contain" />
             <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent hidden sm:block">Otoparkçım</span>
           </Link>
 
@@ -226,7 +293,7 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden relative">
         <div className="w-full lg:w-96 bg-white border-r overflow-y-auto">
           <div className="p-4 border-b bg-gray-50">
             <h2 className="font-bold text-gray-800">Yakın Otoparklar</h2>
@@ -236,7 +303,7 @@ export default function DashboardPage() {
           {filteredParkings.map((parking) => (
             <div
               key={parking.id}
-              onClick={() => setSelectedParking(parking)}
+              onClick={() => handleSelectParking(parking)}
               className={'p-4 border-b cursor-pointer transition-colors ' + (selectedParking?.id === parking.id ? 'bg-blue-50 border-l-4 border-l-blue-600' : 'hover:bg-gray-50')}
             >
               <div className="flex gap-3">
@@ -259,49 +326,219 @@ export default function DashboardPage() {
         </div>
 
         <div className="hidden lg:flex flex-1 relative">
-          <Map parkings={filteredParkings} selectedParking={selectedParking} userLocation={userLocation} onMarkerClick={setSelectedParking} />
+          <Map parkings={filteredParkings} selectedParking={selectedParking} userLocation={userLocation} onMarkerClick={handleSelectParking} />
           
           {activeReservation && (
             <div className="absolute bottom-4 left-4 right-4 z-20">
               <ActiveReservation reservation={activeReservation} onCancel={handleCancel} onArrived={handleArrived} />
             </div>
           )}
+        </div>
 
-          {selectedParking && !activeReservation && (
-            <div className="absolute top-4 left-4 bg-white p-5 rounded-2xl shadow-xl max-w-sm border border-gray-100">
-              <div className="flex justify-between items-start mb-3">
-                <div>
-                  <h3 className="font-bold text-gray-900 text-lg">{selectedParking.name}</h3>
-                  <p className="text-sm text-gray-500">{selectedParking.address}</p>
-                </div>
-                <button onClick={closeCard} className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors">
-                  <span className="text-xl">×</span>
+        {/* Detay Paneli */}
+        <div className={`fixed top-0 right-0 h-full w-full sm:w-[480px] bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out ${showDetail && selectedParking ? 'translate-x-0' : 'translate-x-full'}`}>
+          {selectedParking && (
+            <div className="h-full flex flex-col">
+              {/* Header */}
+              <div className="flex items-center justify-between p-4 border-b bg-white">
+                <h2 className="font-bold text-lg text-gray-900">Otopark Detayı</h2>
+                <button onClick={closeDetail} className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-colors">
+                  <X className="w-6 h-6" />
                 </button>
               </div>
-              
-              <div className="flex items-center gap-4 mb-4 p-3 bg-gray-50 rounded-xl">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-blue-600">{selectedParking.hourly_price} TL</p>
-                  <p className="text-xs text-gray-500">saat</p>
+
+              {/* İçerik */}
+              <div className="flex-1 overflow-y-auto">
+                {/* Fotoğraf Galerisi */}
+                <div className="relative h-56 bg-gradient-to-br from-blue-500 to-cyan-500">
+                  {selectedParking.photos && selectedParking.photos.length > 0 ? (
+                    <>
+                      <img 
+                        src={selectedParking.photos[currentPhotoIndex]} 
+                        alt={selectedParking.name}
+                        className="w-full h-full object-cover"
+                      />
+                      {selectedParking.photos.length > 1 && (
+                        <>
+                          <button 
+                            onClick={() => setCurrentPhotoIndex(prev => prev === 0 ? selectedParking.photos!.length - 1 : prev - 1)}
+                            className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-colors"
+                          >
+                            <ChevronLeft className="w-5 h-5 text-gray-700" />
+                          </button>
+                          <button 
+                            onClick={() => setCurrentPhotoIndex(prev => prev === selectedParking.photos!.length - 1 ? 0 : prev + 1)}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-colors"
+                          >
+                            <ChevronRight className="w-5 h-5 text-gray-700" />
+                          </button>
+                          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                            {selectedParking.photos.map((_, idx) => (
+                              <div key={idx} className={`w-2 h-2 rounded-full transition-colors ${idx === currentPhotoIndex ? 'bg-white' : 'bg-white/50'}`} />
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </>
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <div className="text-center text-white/80">
+                        <Car className="w-16 h-16 mx-auto mb-2 opacity-50" />
+                        <p className="text-sm">Fotoğraf yok</p>
+                      </div>
+                    </div>
+                  )}
+                  {/* Durum Badge */}
+                  <div className={`absolute top-4 left-4 px-3 py-1.5 rounded-full text-sm font-semibold shadow-lg ${selectedParking.status === 'available' ? 'bg-green-500 text-white' : selectedParking.status === 'limited' ? 'bg-yellow-500 text-white' : 'bg-red-500 text-white'}`}>
+                    {selectedParking.status === 'available' ? '✓ Müsait' : selectedParking.status === 'limited' ? '⚠ Az Yer' : '✗ Dolu'}
+                  </div>
                 </div>
-                <div className="w-px h-10 bg-gray-200"></div>
-                <div className="text-center">
-                  <p className="text-lg font-semibold text-gray-800">{selectedParking.trust_score?.toFixed(1) || '5.0'}</p>
-                  <p className="text-xs text-gray-500">puan</p>
-                </div>
-                <div className="w-px h-10 bg-gray-200"></div>
-                <div className={'px-3 py-1 rounded-full text-sm font-medium ' + (selectedParking.status === 'available' ? 'bg-green-100 text-green-700' : selectedParking.status === 'limited' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700')}>
-                  {selectedParking.status === 'available' ? 'Müsait' : selectedParking.status === 'limited' ? 'Az Yer' : 'Dolu'}
+
+                {/* Temel Bilgiler */}
+                <div className="p-5">
+                  <h3 className="text-xl font-bold text-gray-900 mb-1">{selectedParking.name}</h3>
+                  <p className="text-gray-500 text-sm flex items-center gap-1">
+                    <MapPin className="w-4 h-4" />
+                    {selectedParking.address}, {selectedParking.district}
+                  </p>
+
+                  {/* Puan ve İstatistikler */}
+                  <div className="flex items-center gap-6 mt-4 p-4 bg-gray-50 rounded-xl">
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1">
+                        <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                        <span className="text-lg font-bold text-gray-900">{selectedParking.trust_score?.toFixed(1) || '5.0'}</span>
+                      </div>
+                      <span className="text-sm text-gray-500">({parkingReviews.length} değerlendirme)</span>
+                    </div>
+                    <div className="w-px h-8 bg-gray-200" />
+                    <div className="text-center">
+                      <p className="text-lg font-bold text-gray-900">{selectedParking.capacity || '-'}</p>
+                      <p className="text-xs text-gray-500">Kapasite</p>
+                    </div>
+                  </div>
+
+                  {/* Fiyatlandırma */}
+                  <div className="mt-6">
+                    <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                      <Clock className="w-5 h-5 text-blue-500" />
+                      Fiyatlandırma
+                    </h4>
+                    <div className="bg-blue-50 rounded-xl p-4 space-y-2">
+                      {selectedParking.price_ranges && selectedParking.price_ranges.length > 0 ? (
+                        selectedParking.price_ranges.map((range: any, idx: number) => (
+                          <div key={idx} className="flex justify-between items-center">
+                            <span className="text-gray-600 text-sm">
+                              {range.min_hour}-{range.max_hour || '+'} saat
+                            </span>
+                            <span className="font-bold text-blue-600">{range.price} TL</span>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-600 text-sm">Saatlik</span>
+                          <span className="font-bold text-blue-600">{selectedParking.hourly_price} TL</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Özellikler */}
+                  {selectedParking.features && selectedParking.features.length > 0 && (
+                    <div className="mt-6">
+                      <h4 className="font-semibold text-gray-900 mb-3">Özellikler</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedParking.features.map((feature: string) => {
+                          const Icon = getFeatureIcon(feature)
+                          return (
+                            <div key={feature} className="flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-lg text-sm text-gray-700">
+                              <Icon className="w-4 h-4 text-blue-500" />
+                              {getFeatureLabel(feature)}
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Çalışma Saatleri */}
+                  <div className="mt-6">
+                    <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                      <Clock className="w-5 h-5 text-green-500" />
+                      Çalışma Saatleri
+                    </h4>
+                    <div className="bg-green-50 rounded-xl p-4">
+                      {selectedParking.working_hours ? (
+                        <div className="space-y-1 text-sm">
+                          {Object.entries(selectedParking.working_hours).map(([day, hours]: [string, any]) => (
+                            <div key={day} className="flex justify-between">
+                              <span className="text-gray-600">{day}</span>
+                              <span className="font-medium text-gray-900">{hours}</span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-green-700 font-medium text-center">7/24 Açık</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Değerlendirmeler */}
+                  {parkingReviews.length > 0 && (
+                    <div className="mt-6">
+                      <h4 className="font-semibold text-gray-900 mb-3">Son Değerlendirmeler</h4>
+                      <div className="space-y-3">
+                        {parkingReviews.map((review) => (
+                          <div key={review.id} className="p-3 bg-gray-50 rounded-xl">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="font-medium text-gray-800 text-sm">{review.profiles?.full_name || 'Anonim'}</span>
+                              <div className="flex items-center gap-1">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                  <Star key={star} className={`w-3.5 h-3.5 ${star <= review.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`} />
+                                ))}
+                              </div>
+                            </div>
+                            <p className={`text-xs ${review.was_spot_available ? 'text-green-600' : 'text-red-600'}`}>
+                              {review.was_spot_available ? '✓ Yer vardı' : '✗ Yer yoktu'}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
-              <div className="flex gap-3">
-                <a href={getMapsUrl(selectedParking.latitude, selectedParking.longitude)} target="_blank" rel="noopener noreferrer" className="flex-1 py-3 border-2 border-blue-600 text-blue-600 rounded-xl text-center text-sm font-semibold hover:bg-blue-50 transition-colors">Yol Tarifi</a>
-                <button onClick={() => handleReservation(selectedParking.id)} disabled={selectedParking.status === 'full'} className={'flex-1 py-3 rounded-xl text-sm font-semibold text-white transition-colors ' + (selectedParking.status === 'full' ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg shadow-green-500/30')}>GELİYORUM</button>
+              {/* Alt Butonlar */}
+              <div className="p-4 border-t bg-white">
+                <div className="flex gap-3">
+                  <a 
+                    href={getMapsUrl(selectedParking.latitude, selectedParking.longitude)} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="flex-1 py-3.5 border-2 border-blue-600 text-blue-600 rounded-xl text-center font-semibold hover:bg-blue-50 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Navigation className="w-5 h-5" />
+                    Yol Tarifi
+                  </a>
+                  <button 
+                    onClick={() => handleReservation(selectedParking.id)} 
+                    disabled={selectedParking.status === 'full' || !!activeReservation} 
+                    className={'flex-1 py-3.5 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2 ' + (selectedParking.status === 'full' || activeReservation ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg shadow-green-500/30')}
+                  >
+                    <Car className="w-5 h-5" />
+                    GELİYORUM
+                  </button>
+                </div>
               </div>
             </div>
           )}
         </div>
+
+        {/* Overlay */}
+        {showDetail && selectedParking && (
+          <div className="fixed inset-0 bg-black/20 z-40 lg:hidden" onClick={closeDetail} />
+        )}
       </div>
     </div>
   )

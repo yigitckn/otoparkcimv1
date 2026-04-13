@@ -109,7 +109,7 @@ function ParkingAnimation() {
           )
         })}
       </div>
-      <p className="text-center text-white/30 text-xs mt-4">Canli otopark gorunumu</p>
+      <p className="text-center text-white/30 text-xs mt-4">Canlı otopark görünümü</p>
     </div>
   )
 }
@@ -132,7 +132,7 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithPassword({ email, password })
 
     if (error) {
-      setError('Giris basarisiz. Email veya sifre hatali.')
+      setError('Giriş başarısız. Email veya şifre hatalı.')
       setLoading(false)
       return
     }
@@ -166,8 +166,8 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <h1 className="text-4xl font-bold text-white text-center mb-4">Otoparkcim</h1>
-          <p className="text-xl text-slate-400 text-center mb-12">Park etmek hic bu kadar kolay olmamisti</p>
+          <h1 className="text-4xl font-bold text-white text-center mb-4">Otoparkcım</h1>
+          <p className="text-xl text-slate-400 text-center mb-12">Park etmek hiç bu kadar kolay olmamıştı</p>
 
           <div className="flex items-center gap-8 text-center">
             <div>
@@ -182,7 +182,7 @@ export default function LoginPage() {
             <div className="w-px h-12 bg-slate-700"></div>
             <div>
               <p className="text-3xl font-bold text-white">50K+</p>
-              <p className="text-slate-500 text-sm">Kullanici</p>
+              <p className="text-slate-500 text-sm">Kullanıcı</p>
             </div>
           </div>
 
@@ -193,15 +193,13 @@ export default function LoginPage() {
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 relative">
         <div className="w-full max-w-md">
           <div className="lg:hidden text-center mb-8">
-            <div className="w-16 h-16 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-cyan-500/20">
-              <span className="text-white font-bold text-2xl">P</span>
-            </div>
-            <h1 className="text-2xl font-bold text-white">Otoparkcim</h1>
+            <img src="/images/logo.png" alt="Otoparkçım" className="w-10 h-10 rounded-xl object-contain" />
+            <h1 className="text-2xl font-bold text-white">Otoparkcım</h1>
           </div>
 
           <div className="bg-slate-800/50 backdrop-blur-lg p-8 rounded-2xl shadow-2xl border border-slate-700/50">
-            <h2 className="text-2xl font-bold text-white mb-2">Tekrar Hosgeldiniz</h2>
-            <p className="text-slate-400 mb-6">Hesabiniza giris yapin</p>
+            <h2 className="text-2xl font-bold text-white mb-2">Tekrar Hoşgeldiniz</h2>
+            <p className="text-slate-400 mb-6">Hesabınıza giriş yapın</p>
 
             {error && (
               <div className="mb-4 p-4 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-sm">
@@ -219,7 +217,7 @@ export default function LoginPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">Sifre</label>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Şifre</label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
                   <input type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} className="w-full pl-10 pr-12 py-3 bg-slate-900/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all" placeholder="********" required />
@@ -230,11 +228,11 @@ export default function LoginPage() {
               </div>
 
               <button type="submit" disabled={loading} className="w-full py-3.5 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl font-semibold hover:from-cyan-600 hover:to-blue-700 disabled:opacity-50 shadow-lg shadow-cyan-500/20 transition-all">
-                {loading ? 'Giris yapiliyor...' : 'Giris Yap'}
+                {loading ? 'Giriş yapılıyor...' : 'Giriş Yap'}
               </button>
             </form>
 
-            <p className="text-center text-slate-500 mt-6">Hesabiniz yok mu? <Link href="/auth/register" className="text-cyan-400 font-semibold hover:underline">Kayit Ol</Link></p>
+            <p className="text-center text-slate-500 mt-6">Hesabınız yok mu? <Link href="/auth/register" className="text-cyan-400 font-semibold hover:underline">Kayıt  Ol</Link></p>
           </div>
         </div>
       </div>

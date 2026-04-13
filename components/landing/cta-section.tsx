@@ -12,15 +12,15 @@ export function CTASection() {
           
           <div className="relative z-10 max-w-3xl mx-auto text-center">
             <span className="inline-block px-4 py-2 rounded-full bg-cyan-500/10 text-cyan-400 text-sm font-semibold mb-6 border border-cyan-500/20">
-              Isletmeciler Icin
+              İşletmeciler çin
             </span>
             
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Otopark Isletmecisi misiniz?
+              Otopark İşletmecisi misiniz?
             </h2>
             <p className="text-slate-400 text-lg mb-8">
-              Otoparkinizi Otoparkcim'a ekleyin, binlerce potansiyel musteriye ulasin. 
-              Doluluk oraninizi artirin, isletmenizi buyutun.
+              Otoparkınızı Otoparkcım'a ekleyin, binlerce potansiyel müşteriye ulaşın. 
+              Doluluk oranınızı artırın, işletmenizi büyütün.
             </p>
             
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -31,7 +31,7 @@ export function CTASection() {
               >
                 <Link href="/owner/register">
                   <Building2 className="mr-2 h-5 w-5" />
-                  Otoparkimi Ekle
+                  Otoparkımı Ekle
                 </Link>
               </Button>
               <Button 

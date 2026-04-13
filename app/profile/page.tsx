@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, User, Mail, Phone, Calendar, Car, Clock, CheckCircle, XCircle, LogOut } from 'lucide-react'
+import { ArrowLeft, User, Mail, Phone, Calendar, Car, Clock, CheckCircle, XCircle, LogOut, Star } from 'lucide-react'
 
 interface Profile {
   id: string
@@ -20,10 +20,16 @@ interface Reservation {
   status: string
   created_at: string
   expires_at: string
+  parking_id: string
   parking: {
+    id: string
     name: string
     address: string
     hourly_price: number
+  }
+  review?: {
+    rating: number
+    was_spot_available: boolean
   }
 }
 
@@ -35,6 +41,12 @@ export default function ProfilePage() {
   const [fullName, setFullName] = useState('')
   const [phone, setPhone] = useState('')
   const [saving, setSaving] = useState(false)
+  const [ratingReservationId, setRatingReservationId] = useState<string | null>(null)
+  const [selectedRating, setSelectedRating] = useState(0)
+  const [hoverRating, setHoverRating] = useState(0)
+  const [submittingRating, setSubmittingRating] = useState(false)
+  const [wasSpotAvailable, setWasSpotAvailable] = useState<boolean | null>(null)
+  const [ratingStep, setRatingStep] = useState(1)
 
   const router = useRouter()
   const supabase = createClient()
@@ -65,12 +77,25 @@ export default function ProfilePage() {
 
     const { data: reservationsData } = await supabase
       .from('reservations')
-      .select('*, parking:parkings(name, address, hourly_price)')
+      .select('*, parking:parkings(id, name, address, hourly_price)')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .limit(10)
 
-    setReservations(reservationsData || [])
+    if (reservationsData) {
+      const reservationsWithReviews = await Promise.all(
+        reservationsData.map(async (res) => {
+          const { data: review } = await supabase
+            .from('reviews')
+            .select('rating, was_spot_available')
+            .eq('reservation_id', res.id)
+            .single()
+          return { ...res, review }
+        })
+      )
+      setReservations(reservationsWithReviews)
+    }
+
     setLoading(false)
   }
 
@@ -93,6 +118,48 @@ export default function ProfilePage() {
   const handleLogout = async () => {
     await supabase.auth.signOut()
     router.push('/')
+  }
+
+  const handleRating = async (reservationId: string, parkingId: string) => {
+    if (!profile || selectedRating === 0 || wasSpotAvailable === null) return
+    setSubmittingRating(true)
+
+    const { error } = await supabase
+      .from('reviews')
+      .insert({
+        user_id: profile.id,
+        parking_id: parkingId,
+        reservation_id: reservationId,
+        rating: selectedRating,
+        was_spot_available: wasSpotAvailable,
+      })
+
+    if (!error) {
+      setReservations(prev => prev.map(res => 
+        res.id === reservationId 
+          ? { ...res, review: { rating: selectedRating, was_spot_available: wasSpotAvailable } }
+          : res
+      ))
+      setRatingReservationId(null)
+      setSelectedRating(0)
+      setWasSpotAvailable(null)
+      setRatingStep(1)
+    }
+    setSubmittingRating(false)
+  }
+
+  const startRating = (reservationId: string) => {
+    setRatingReservationId(reservationId)
+    setRatingStep(1)
+    setWasSpotAvailable(null)
+    setSelectedRating(0)
+  }
+
+  const cancelRating = () => {
+    setRatingReservationId(null)
+    setSelectedRating(0)
+    setWasSpotAvailable(null)
+    setRatingStep(1)
   }
 
   const getStatusColor = (status: string) => {
@@ -267,29 +334,144 @@ export default function ProfilePage() {
           ) : (
             <div className="space-y-3">
               {reservations.map((res) => (
-                <div key={res.id} className="flex items-center justify-between p-4 bg-slate-900/50 rounded-xl border border-slate-700/30">
-                  <div className="flex items-center gap-4">
-                    <div className={'w-10 h-10 rounded-xl flex items-center justify-center ' + 
-                      (res.status === 'completed' ? 'bg-green-500/20' : res.status === 'cancelled' ? 'bg-red-500/20' : 'bg-blue-500/20')}>
-                      {res.status === 'completed' ? (
-                        <CheckCircle className="w-5 h-5 text-green-400" />
-                      ) : res.status === 'cancelled' ? (
-                        <XCircle className="w-5 h-5 text-red-400" />
+                <div key={res.id} className="p-4 bg-slate-900/50 rounded-xl border border-slate-700/30">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className={'w-10 h-10 rounded-xl flex items-center justify-center ' + 
+                        (res.status === 'completed' ? 'bg-green-500/20' : res.status === 'cancelled' ? 'bg-red-500/20' : 'bg-blue-500/20')}>
+                        {res.status === 'completed' ? (
+                          <CheckCircle className="w-5 h-5 text-green-400" />
+                        ) : res.status === 'cancelled' ? (
+                          <XCircle className="w-5 h-5 text-red-400" />
+                        ) : (
+                          <Clock className="w-5 h-5 text-blue-400" />
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-medium text-white">{res.parking?.name}</p>
+                        <p className="text-xs text-slate-400">{formatDate(res.created_at)}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className={'px-2 py-1 rounded-full text-xs font-medium ' + getStatusColor(res.status)}>
+                        {getStatusText(res.status)}
+                      </span>
+                      <p className="text-sm text-cyan-400 mt-1">{res.parking?.hourly_price} TL/saat</p>
+                    </div>
+                  </div>
+
+                  {res.status === 'completed' && (
+                    <div className="mt-4 pt-4 border-t border-slate-700/50">
+                      {res.review ? (
+                        <div className="flex items-center gap-4">
+                          <div className="flex items-center gap-2">
+                            <span className={`text-sm ${res.review.was_spot_available ? 'text-green-400' : 'text-red-400'}`}>
+                              {res.review.was_spot_available ? '✓ Yer vardı' : '✗ Yer yoktu'}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <Star
+                                key={star}
+                                className={`w-4 h-4 ${star <= res.review!.rating ? 'text-yellow-400 fill-yellow-400' : 'text-slate-600'}`}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      ) : ratingReservationId === res.id ? (
+                        <div className="space-y-4">
+                          {ratingStep === 1 ? (
+                            <div>
+                              <p className="text-sm text-slate-300 mb-3">Gittiğinizde yer var mıydı?</p>
+                              <div className="flex items-center gap-3">
+                                <button
+                                  onClick={() => {
+                                    setWasSpotAvailable(true)
+                                    setRatingStep(2)
+                                  }}
+                                  className="flex-1 py-3 bg-green-500/20 text-green-400 rounded-xl font-medium hover:bg-green-500/30 transition-colors border border-green-500/30"
+                                >
+                                  ✓ Evet, yer vardı
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setWasSpotAvailable(false)
+                                    setRatingStep(2)
+                                  }}
+                                  className="flex-1 py-3 bg-red-500/20 text-red-400 rounded-xl font-medium hover:bg-red-500/30 transition-colors border border-red-500/30"
+                                >
+                                  ✗ Hayır, yer yoktu
+                                </button>
+                              </div>
+                              <button
+                                onClick={cancelRating}
+                                className="w-full mt-3 py-2 text-slate-400 text-sm hover:text-slate-300 transition-colors"
+                              >
+                                Vazgeç
+                              </button>
+                            </div>
+                          ) : (
+                            <div>
+                              <p className="text-sm text-slate-300 mb-3">Hizmeti nasıl değerlendirirsiniz?</p>
+                              <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-1">
+                                  {[1, 2, 3, 4, 5].map((star) => (
+                                    <button
+                                      key={star}
+                                      onClick={() => setSelectedRating(star)}
+                                      onMouseEnter={() => setHoverRating(star)}
+                                      onMouseLeave={() => setHoverRating(0)}
+                                      className="transition-transform hover:scale-110"
+                                    >
+                                      <Star
+                                        className={`w-7 h-7 ${
+                                          star <= (hoverRating || selectedRating)
+                                            ? 'text-yellow-400 fill-yellow-400'
+                                            : 'text-slate-600'
+                                        }`}
+                                      />
+                                    </button>
+                                  ))}
+                                </div>
+                                {selectedRating > 0 && (
+                                  <span className="text-sm text-slate-400">
+                                    {selectedRating === 1 && 'Çok Kötü'}
+                                    {selectedRating === 2 && 'Kötü'}
+                                    {selectedRating === 3 && 'Orta'}
+                                    {selectedRating === 4 && 'İyi'}
+                                    {selectedRating === 5 && 'Mükemmel'}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-3 mt-4">
+                                <button
+                                  onClick={() => setRatingStep(1)}
+                                  className="px-4 py-2 bg-slate-700 text-slate-300 text-sm font-medium rounded-lg hover:bg-slate-600 transition-colors"
+                                >
+                                  Geri
+                                </button>
+                                <button
+                                  onClick={() => handleRating(res.id, res.parking?.id)}
+                                  disabled={selectedRating === 0 || submittingRating}
+                                  className="flex-1 py-2 bg-cyan-500 text-white text-sm font-medium rounded-xl hover:bg-cyan-600 disabled:opacity-50 transition-colors"
+                                >
+                                  {submittingRating ? 'Gönderiliyor...' : 'Değerlendirmeyi Gönder'}
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       ) : (
-                        <Clock className="w-5 h-5 text-blue-400" />
+                        <button
+                          onClick={() => startRating(res.id)}
+                          className="flex items-center gap-2 text-sm text-yellow-400 hover:text-yellow-300 transition-colors"
+                        >
+                          <Star className="w-4 h-4" />
+                          Bu otoparkı puanla
+                        </button>
                       )}
                     </div>
-                    <div>
-                      <p className="font-medium text-white">{res.parking?.name}</p>
-                      <p className="text-xs text-slate-400">{formatDate(res.created_at)}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <span className={'px-2 py-1 rounded-full text-xs font-medium ' + getStatusColor(res.status)}>
-                      {getStatusText(res.status)}
-                    </span>
-                    <p className="text-sm text-cyan-400 mt-1">{res.parking?.hourly_price} TL/saat</p>
-                  </div>
+                  )}
                 </div>
               ))}
             </div>

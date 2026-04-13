@@ -4,20 +4,20 @@ const steps = [
   {
     number: "01",
     icon: Search,
-    title: "Otopark Arayin",
-    description: "Konumunuzu girin veya haritada bolgeyi secin. Yakindaki tum otoparklari gorun."
+    title: "Otopark Arayın",
+    description: "Konumunuzu girin veya haritada bölgeyi seçin. Yakındaki tüm otoparkları görün."
   },
   {
     number: "02",
     icon: MousePointerClick,
-    title: "Rezervasyon Yapin",
-    description: "Size uygun otoparki secin, fiyatlari inceleyin. Tek tikla yerinizi ayirtin."
+    title: "Rezervasyon Yapın",
+    description: "Size uygun otoparkı seçin, fiyatları inceleyin. Tek tıkla yerinizi ayırtin."
   },
   {
     number: "03",
     icon: Car,
     title: "Park Edin",
-    description: "Navigasyon ile otoparka gidin. Geldiginizde yeriniz hazir."
+    description: "Navigasyon ile otoparka gidin. Geldiğinizde yeriniz hazır."
   }
 ]
 
@@ -29,17 +29,17 @@ export function HowItWorksSection() {
       <div className="container mx-auto px-4 relative z-10">
         <div className="text-center max-w-2xl mx-auto mb-16">
           <span className="inline-block px-4 py-2 rounded-full bg-cyan-500/10 text-cyan-400 text-sm font-semibold mb-4 border border-cyan-500/20">
-            Nasil Calisir
+            Nasıl Çalışır
           </span>
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Uc Adimda{" "}
+            Üç Adımda{" "}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400">
               Park Yeriniz
             </span>{" "}
-            Hazir
+            Hazır
           </h2>
           <p className="text-slate-400 text-lg">
-            Basit ve hizli surec ile dakikalar icinde park yerinizi ayirtin.
+            Basit ve hızlı süreç ile dakikalar içinde park yerinizi ayırtin.
           </p>
         </div>
 
