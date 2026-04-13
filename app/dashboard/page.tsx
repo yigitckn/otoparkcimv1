@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Parking } from '@/types'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Search, MapPin, Bell, X, Star, Clock, Shield, Car, Zap, Droplets, Wifi, ChevronLeft, ChevronRight, Navigation } from 'lucide-react'
+import { Search, MapPin, Bell, X, Star, Clock, Shield, Car, Zap, Droplets, Wifi, ChevronLeft, ChevronRight, Navigation, List, Map as MapIcon } from 'lucide-react'
 import dynamic from 'next/dynamic'
 
 const Map = dynamic(() => import('@/components/map/Map'), { ssr: false })
@@ -22,6 +22,7 @@ export default function DashboardPage() {
   const [userName, setUserName] = useState('')
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
   const [parkingReviews, setParkingReviews] = useState<any[]>([])
+  const [mobileView, setMobileView] = useState<'list' | 'map'>('list')
 
   const supabase = createClient()
   const router = useRouter()
@@ -38,27 +39,28 @@ export default function DashboardPage() {
   useEffect(() => {
     checkUserAndLoadData()
   }, [])
-  useEffect(() => {
-  const channel = supabase
-    .channel('user-parking-updates')
-    .on('postgres_changes', {
-      event: 'UPDATE',
-      schema: 'public',
-      table: 'parkings'
-    }, (payload) => {
-      setParkings(prev => prev.map(p => 
-        p.id === payload.new.id ? { ...p, ...payload.new } : p
-      ))
-      if (selectedParking?.id === payload.new.id) {
-        setSelectedParking(prev => prev ? { ...prev, ...payload.new } : null)
-      }
-    })
-    .subscribe()
 
-  return () => {
-    supabase.removeChannel(channel)
-  }
-}, [selectedParking?.id])
+  useEffect(() => {
+    const channel = supabase
+      .channel('user-parking-updates')
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'parkings'
+      }, (payload) => {
+        setParkings(prev => prev.map(p => 
+          p.id === payload.new.id ? { ...p, ...payload.new } : p
+        ))
+        if (selectedParking?.id === payload.new.id) {
+          setSelectedParking(prev => prev ? { ...prev, ...payload.new } : null)
+        }
+      })
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [selectedParking?.id])
 
   const checkUserAndLoadData = async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -293,8 +295,27 @@ export default function DashboardPage() {
         </div>
       </header>
 
+      {/* Mobil Tab Butonları */}
+      <div className="lg:hidden flex border-b border-gray-200 bg-white">
+        <button
+          onClick={() => setMobileView('list')}
+          className={`flex-1 py-3 flex items-center justify-center gap-2 font-medium transition-colors ${mobileView === 'list' ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50' : 'text-gray-600'}`}
+        >
+          <List className="w-5 h-5" />
+          Liste
+        </button>
+        <button
+          onClick={() => setMobileView('map')}
+          className={`flex-1 py-3 flex items-center justify-center gap-2 font-medium transition-colors ${mobileView === 'map' ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50' : 'text-gray-600'}`}
+        >
+          <MapIcon className="w-5 h-5" />
+          Harita
+        </button>
+      </div>
+
       <div className="flex-1 flex overflow-hidden relative">
-        <div className="w-full lg:w-96 bg-white border-r overflow-y-auto">
+        {/* Liste - Desktop'ta her zaman, Mobilde sadece list seçiliyse */}
+        <div className={`w-full lg:w-96 bg-white border-r overflow-y-auto ${mobileView === 'list' ? 'block' : 'hidden'} lg:block`}>
           <div className="p-4 border-b bg-gray-50">
             <h2 className="font-bold text-gray-800">Yakın Otoparklar</h2>
             <p className="text-sm text-gray-500">{filteredParkings.length} otopark bulundu</p>
@@ -323,13 +344,29 @@ export default function DashboardPage() {
               </div>
             </div>
           ))}
+
+          {/* Mobil Aktif Rezervasyon - Liste görünümünde */}
+          {activeReservation && mobileView === 'list' && (
+            <div className="p-4 lg:hidden">
+              <ActiveReservation reservation={activeReservation} onCancel={handleCancel} onArrived={handleArrived} />
+            </div>
+          )}
         </div>
 
-        <div className="hidden lg:flex flex-1 relative">
+        {/* Harita - Desktop'ta her zaman, Mobilde sadece map seçiliyse */}
+        <div className={`flex-1 relative ${mobileView === 'map' ? 'block' : 'hidden'} lg:block`}>
           <Map parkings={filteredParkings} selectedParking={selectedParking} userLocation={userLocation} onMarkerClick={handleSelectParking} />
           
+          {/* Desktop Aktif Rezervasyon */}
           {activeReservation && (
-            <div className="absolute bottom-4 left-4 right-4 z-20">
+            <div className="absolute bottom-4 left-4 right-4 z-20 hidden lg:block">
+              <ActiveReservation reservation={activeReservation} onCancel={handleCancel} onArrived={handleArrived} />
+            </div>
+          )}
+
+          {/* Mobil Aktif Rezervasyon - Harita görünümünde */}
+          {activeReservation && mobileView === 'map' && (
+            <div className="absolute bottom-4 left-4 right-4 z-20 lg:hidden">
               <ActiveReservation reservation={activeReservation} onCancel={handleCancel} onArrived={handleArrived} />
             </div>
           )}
