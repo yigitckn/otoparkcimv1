@@ -16,7 +16,8 @@ export default function DashboardPage() {
   const [showDetail, setShowDetail] = useState(false)
   const [activeReservation, setActiveReservation] = useState<any>(null)
   const [searchQuery, setSearchQuery] = useState('')
-  const [filter, setFilter] = useState('all')
+  const [sortBy, setSortBy] = useState('all')
+  const [featureFilters, setFeatureFilters] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null)
   const [userName, setUserName] = useState('')
@@ -160,24 +161,44 @@ export default function DashboardPage() {
     }
   }
 
+  const toggleFeatureFilter = (feature: string) => {
+    setFeatureFilters(prev => 
+      prev.includes(feature) ? prev.filter(f => f !== feature) : [...prev, feature]
+    )
+  }
+
   const filteredParkings = parkings.filter(p => {
     if (searchQuery) {
       const q = searchQuery.toLowerCase()
-      return p.name.toLowerCase().includes(q) || p.address.toLowerCase().includes(q) || p.district.toLowerCase().includes(q)
+      if (!p.name.toLowerCase().includes(q) && !p.address.toLowerCase().includes(q) && !p.district.toLowerCase().includes(q)) {
+        return false
+      }
+    }
+    if (sortBy === 'available' && p.status === 'full') return false
+    if (featureFilters.length > 0) {
+      const parkingFeatures = p.features || []
+      for (const f of featureFilters) {
+        if (!parkingFeatures.includes(f)) return false
+      }
     }
     return true
-  }).filter(p => {
-    if (filter === 'available') return p.status !== 'full'
-    return true
   }).sort((a, b) => {
-    if (filter === 'cheapest') return a.hourly_price - b.hourly_price
+    if (sortBy === 'cheapest') return a.hourly_price - b.hourly_price
+    if (sortBy === 'rating') return (b.trust_score || 0) - (a.trust_score || 0)
     return 0
   })
 
-  const filters = [
+  const sortOptions = [
     { key: 'all', label: 'Tümü' },
     { key: 'cheapest', label: 'En Ucuz' },
+    { key: 'rating', label: 'En Yüksek Puan' },
     { key: 'available', label: 'Müsait' },
+  ]
+
+  const featureOptions = [
+    { key: 'ev_charging', label: 'Elektrikli Şarj', icon: Zap },
+    { key: 'covered', label: 'Kapalı Otopark', icon: Shield },
+    { key: 'car_wash', label: 'Oto Yıkama', icon: Droplets },
   ]
 
   const handleReservation = async (parkingId: string) => {
@@ -234,6 +255,56 @@ export default function DashboardPage() {
     return labels[feature] || feature
   }
 
+  // Filtre Bileşeni - Hem harita içinde hem listede kullanılacak
+  const FilterBar = () => (
+    <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
+      {/* Sıralama chip'leri */}
+      {sortOptions.map((s) => (
+        <button
+          key={s.key}
+          onClick={() => setSortBy(s.key)}
+          className={`px-3.5 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-all flex-shrink-0 ${
+            sortBy === s.key
+              ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
+              : 'bg-white/95 text-gray-700 hover:bg-white border border-gray-200/80 shadow-sm backdrop-blur-sm'
+          }`}
+        >
+          {s.label}
+        </button>
+      ))}
+
+      {/* Ayırıcı nokta */}
+      <div className="w-1 h-1 rounded-full bg-gray-400 flex-shrink-0 mx-1" />
+
+      {/* Özellik filtre chip'leri */}
+      {featureOptions.map((f) => (
+        <button
+          key={f.key}
+          onClick={() => toggleFeatureFilter(f.key)}
+          className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-all flex-shrink-0 ${
+            featureFilters.includes(f.key)
+              ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/30'
+              : 'bg-white/95 text-gray-700 hover:bg-white border border-gray-200/80 shadow-sm backdrop-blur-sm'
+          }`}
+        >
+          <f.icon className="w-3.5 h-3.5" />
+          {f.label}
+        </button>
+      ))}
+
+      {/* Temizle butonu — sadece aktif filtre varsa göster */}
+      {featureFilters.length > 0 && (
+        <button
+          onClick={() => setFeatureFilters([])}
+          className="p-2 rounded-full bg-white/95 text-red-500 hover:bg-red-50 flex-shrink-0 border border-red-200 shadow-sm backdrop-blur-sm transition-colors"
+          title="Filtreleri temizle"
+        >
+          <X className="w-3.5 h-3.5" />
+        </button>
+      )}
+    </div>
+  )
+
   if (loading) {
     return (
       <div className="h-screen flex items-center justify-center bg-gray-50">
@@ -244,58 +315,47 @@ export default function DashboardPage() {
 
   return (
     <div className="h-screen flex flex-col">
-      <header className="bg-white border-b border-gray-200 px-4 py-3">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-          <Link href="/" className="flex items-center gap-2">
-            <img src="/images/logo.png" alt="Otoparkçım" className="w-10 h-10 rounded-xl object-contain" />
-            <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent hidden sm:block">Otoparkçım</span>
-          </Link>
+      {/* ===== HEADER ===== */}
+<header className="bg-white border-b border-gray-100">
+  <div className="flex items-center justify-between px-4 lg:px-6 py-3">
+    {/* Logo - Sol */}
+    <Link href="/" className="flex items-center gap-3 flex-shrink-0">
+      <img src="/images/logo.png" alt="Otoparkçım" className="w-12 h-12 rounded-xl object-contain" />
+      <span className="hidden sm:block text-2xl font-extrabold tracking-tight">
+        Otopark<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">çım</span>
+      </span>
+    </Link>
 
-          <div className="flex-1 max-w-xl">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Adres, ilçe veya otopark ara..."
-                className="w-full py-3 px-4 pl-10 pr-20 bg-gray-100 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-              <button className="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
-                Ara
-              </button>
-            </div>
-          </div>
+    {/* Arama - Orta */}
+    <div className="flex-1 max-w-lg mx-8">
+      <div className="relative">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Adres, ilçe veya otopark ara..."
+          className="w-full py-2.5 pl-11 pr-4 bg-gray-100 border border-transparent rounded-full text-sm focus:outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+        />
+      </div>
+    </div>
 
-          <div className="flex items-center gap-3">
-            <button className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center hover:bg-gray-200 transition-colors relative">
-              <Bell className="w-5 h-5 text-gray-600" />
-            </button>
-            <Link href="/profile" className="flex items-center gap-3 px-3 py-2 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-sm font-medium">{userName ? userName[0].toUpperCase() : 'U'}</span>
-              </div>
-              <span className="text-sm font-medium text-gray-700 hidden md:block">{userName || 'Profil'}</span>
-            </Link>
-          </div>
+    {/* Sağ - Bildirim & Profil */}
+    <div className="flex items-center gap-3 flex-shrink-0">
+      <button className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors relative">
+        <Bell className="w-5 h-5 text-gray-600" />
+        <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white"></span>
+      </button>
+      <Link href="/profile" className="flex items-center gap-2.5 py-1.5 pl-1.5 pr-4 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors">
+        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center">
+          <span className="text-white text-sm font-semibold">{userName ? userName[0].toUpperCase() : 'U'}</span>
         </div>
-
-        <div className="max-w-7xl mx-auto mt-3 flex items-center gap-2">
-          <MapPin className="w-4 h-4 text-blue-600" />
-          <span className="text-sm text-gray-600 mr-4">İstanbul</span>
-          {filters.map((f) => (
-            <button
-              key={f.key}
-              onClick={() => setFilter(f.key)}
-              className={'px-4 py-2 rounded-full text-sm font-medium transition-colors ' + (filter === f.key ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200')}
-            >
-              {f.label}
-            </button>
-          ))}
-        </div>
-      </header>
-
-      {/* Mobil Tab Butonları */}
+        <span className="text-sm font-medium text-gray-700 hidden md:block">{userName || 'Profil'}</span>
+      </Link>
+    </div>
+  </div>
+</header>
+      {/* ===== MOBİL TAB BUTONLARI ===== */}
       <div className="lg:hidden flex border-b border-gray-200 bg-white">
         <button
           onClick={() => setMobileView('list')}
@@ -313,12 +373,18 @@ export default function DashboardPage() {
         </button>
       </div>
 
+      {/* ===== ANA İÇERİK ===== */}
       <div className="flex-1 flex overflow-hidden relative">
         {/* Liste - Desktop'ta her zaman, Mobilde sadece list seçiliyse */}
         <div className={`w-full lg:w-96 bg-white border-r overflow-y-auto ${mobileView === 'list' ? 'block' : 'hidden'} lg:block`}>
           <div className="p-4 border-b bg-gray-50">
             <h2 className="font-bold text-gray-800">Yakın Otoparklar</h2>
             <p className="text-sm text-gray-500">{filteredParkings.length} otopark bulundu</p>
+          </div>
+
+          {/* Liste görünümünde filtreler */}
+          <div className="p-3 border-b bg-white lg:hidden">
+            <FilterBar />
           </div>
 
           {filteredParkings.map((parking) => (
@@ -335,7 +401,7 @@ export default function DashboardPage() {
                   <h3 className="font-semibold text-gray-800 text-sm truncate">{parking.name}</h3>
                   <p className="text-xs text-gray-500 truncate">{parking.address}</p>
                   <div className="flex justify-between items-center mt-2">
-                    <span className="text-sm font-bold text-blue-600">{parking.hourly_price} TL/saat</span>
+                    <span className={parking.hourly_price > 0 ? "text-sm font-bold text-blue-600" : "text-sm font-medium text-amber-600"}>{parking.hourly_price > 0 ? parking.hourly_price + ' TL/saat' : 'Fiyat bekleniyor'}</span>
                     <span className={'text-xs px-2 py-1 rounded-full font-medium ' + (parking.status === 'available' ? 'bg-green-100 text-green-700' : parking.status === 'limited' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700')}>
                       {parking.status === 'available' ? 'Müsait' : parking.status === 'limited' ? 'Az Yer' : 'Dolu'}
                     </span>
@@ -355,6 +421,11 @@ export default function DashboardPage() {
 
         {/* Harita - Desktop'ta her zaman, Mobilde sadece map seçiliyse */}
         <div className={`flex-1 relative ${mobileView === 'map' ? 'block' : 'hidden'} lg:block`}>
+          {/* ===== HARİTA İÇİ FİLTRELER ===== */}
+          <div className="absolute top-4 left-4 right-4 z-10">
+            <FilterBar />
+          </div>
+
           <Map parkings={filteredParkings} selectedParking={selectedParking} userLocation={userLocation} onMarkerClick={handleSelectParking} />
           
           {/* Desktop Aktif Rezervasyon */}
@@ -372,7 +443,7 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* Detay Paneli */}
+        {/* ===== DETAY PANELİ ===== */}
         <div className={`fixed top-0 right-0 h-full w-full sm:w-[480px] bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out ${showDetail && selectedParking ? 'translate-x-0' : 'translate-x-full'}`}>
           {selectedParking && (
             <div className="h-full flex flex-col">
@@ -461,23 +532,30 @@ export default function DashboardPage() {
                       <Clock className="w-5 h-5 text-blue-500" />
                       Fiyatlandırma
                     </h4>
-                    <div className="bg-blue-50 rounded-xl p-4 space-y-2">
-                      {selectedParking.price_ranges && selectedParking.price_ranges.length > 0 ? (
-                        selectedParking.price_ranges.map((range: any, idx: number) => (
-                          <div key={idx} className="flex justify-between items-center">
-                            <span className="text-gray-600 text-sm">
-                              {range.min_hour}-{range.max_hour || '+'} saat
-                            </span>
-                            <span className="font-bold text-blue-600">{range.price} TL</span>
+                    {selectedParking.hourly_price > 0 || (selectedParking.price_ranges && selectedParking.price_ranges.length > 0) ? (
+                      <div className="bg-blue-50 rounded-xl p-4 space-y-2">
+                        {selectedParking.price_ranges && selectedParking.price_ranges.length > 0 ? (
+                          selectedParking.price_ranges.map((range: any, idx: number) => (
+                            <div key={idx} className="flex justify-between items-center">
+                              <span className="text-gray-600 text-sm">
+                                {range.min_hour}-{range.max_hour || '+'} saat
+                              </span>
+                              <span className="font-bold text-blue-600">{range.price} TL</span>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="flex justify-between items-center">
+                            <span className="text-gray-600 text-sm">Saatlik</span>
+                            <span className="font-bold text-blue-600">{selectedParking.hourly_price} TL</span>
                           </div>
-                        ))
-                      ) : (
-                        <div className="flex justify-between items-center">
-                          <span className="text-gray-600 text-sm">Saatlik</span>
-                          <span className="font-bold text-blue-600">{selectedParking.hourly_price} TL</span>
-                        </div>
-                      )}
-                    </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="bg-amber-50 rounded-xl p-4 text-center">
+                        <p className="text-amber-700 text-sm font-medium">Fiyat bilgisi henüz eklenmedi</p>
+                        <p className="text-amber-600 text-xs mt-1">İşletme tarafından güncellenecek</p>
+                      </div>
+                    )}
                   </div>
 
                   {/* Özellikler */}
@@ -548,6 +626,14 @@ export default function DashboardPage() {
 
               {/* Alt Butonlar */}
               <div className="p-4 border-t bg-white">
+                {!selectedParking.is_claimed && (
+                  <Link
+                    href={'/claim/' + selectedParking.id}
+                    className="block w-full py-3 mb-3 bg-amber-50 border-2 border-amber-200 text-amber-700 rounded-xl text-center font-medium hover:bg-amber-100 transition-colors"
+                  >
+                    Bu otopark size mi ait?
+                  </Link>
+                )}
                 <div className="flex gap-3">
                   <a 
                     href={getMapsUrl(selectedParking.latitude, selectedParking.longitude)} 

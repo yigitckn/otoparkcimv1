@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Plus, MapPin, Car, Clock } from 'lucide-react'
+import { Plus, MapPin, Car, Clock, Pencil } from 'lucide-react'
 
 interface Parking {
   id: string
@@ -223,23 +223,31 @@ export default function OwnerDashboardPage() {
               <div className="space-y-4">
                 {parkings.map((parking) => (
                   <div key={parking.id} className="p-4 bg-slate-900/50 rounded-xl border border-slate-700/30">
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-start justify-between mb-4">
                       <div>
                         <h3 className="font-semibold text-white">{parking.name}</h3>
                         <p className="text-sm text-slate-400">{parking.address}</p>
+                        <p className="text-cyan-400 font-bold text-sm mt-1">
+                          {parking.hourly_price > 0 ? parking.hourly_price + ' TL/saat' : 'Fiyat belirtilmedi'}
+                        </p>
                       </div>
-                      <span className="text-cyan-400 font-bold">{parking.hourly_price} TL/saat</span>
+                      <Link
+                        href={'/owner/parking/' + parking.id + '/edit'}
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-700 text-slate-300 rounded-lg text-xs font-medium hover:bg-slate-600 transition-colors"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                        Düzenle / Güncelle
+                      </Link>
                     </div>
                     
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => updateStatus(parking.id, 'available')}
                         disabled={updating === parking.id}
-                        className={`flex-1 py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2 ${
-                          parking.status === 'available' 
+                        className={'flex-1 py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2 ' +
+                          (parking.status === 'available' 
                             ? 'bg-green-500 text-white shadow-lg shadow-green-500/30' 
-                            : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
-                        }`}
+                            : 'bg-slate-800 text-slate-400 hover:bg-slate-700')}
                       >
                         <span className="w-2 h-2 rounded-full bg-current"></span>
                         Müsait
@@ -247,11 +255,10 @@ export default function OwnerDashboardPage() {
                       <button
                         onClick={() => updateStatus(parking.id, 'limited')}
                         disabled={updating === parking.id}
-                        className={`flex-1 py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2 ${
-                          parking.status === 'limited' 
+                        className={'flex-1 py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2 ' +
+                          (parking.status === 'limited' 
                             ? 'bg-yellow-500 text-white shadow-lg shadow-yellow-500/30' 
-                            : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
-                        }`}
+                            : 'bg-slate-800 text-slate-400 hover:bg-slate-700')}
                       >
                         <span className="w-2 h-2 rounded-full bg-current"></span>
                         Az Yer
@@ -259,17 +266,16 @@ export default function OwnerDashboardPage() {
                       <button
                         onClick={() => updateStatus(parking.id, 'full')}
                         disabled={updating === parking.id}
-                        className={`flex-1 py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2 ${
-                          parking.status === 'full' 
+                        className={'flex-1 py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2 ' +
+                          (parking.status === 'full' 
                             ? 'bg-red-500 text-white shadow-lg shadow-red-500/30' 
-                            : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
-                        }`}
+                            : 'bg-slate-800 text-slate-400 hover:bg-slate-700')}
                       >
                         <span className="w-2 h-2 rounded-full bg-current"></span>
                         Dolu
                       </button>
                     </div>
-                    
+
                     {updating === parking.id && (
                       <div className="flex items-center justify-center mt-3">
                         <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-cyan-500"></div>

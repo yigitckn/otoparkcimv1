@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, MapPin, Car, Plus, Trash2, Zap, Shield, Wifi, Droplets, Clock, Camera, X } from 'lucide-react'
 import { GoogleMap, useJsApiLoader, Marker } from '@react-google-maps/api'
@@ -42,68 +42,15 @@ interface WorkingHour {
 
 const mapContainerStyle = { width: '100%', height: '300px', borderRadius: '12px' }
 const defaultCenter = { lat: 41.0082, lng: 28.9784 }
-const mapStyles = [
-  {
-    featureType: 'poi',
-    elementType: 'all',
-    stylers: [{ visibility: 'off' }]
-  },
-  {
-    featureType: 'poi.park',
-    elementType: 'geometry',
-    stylers: [{ visibility: 'on' }]
-  },
-  {
-    featureType: 'transit',
-    elementType: 'labels',
-    stylers: [{ visibility: 'off' }]
-  },
-  {
-    featureType: 'transit.station',
-    elementType: 'all',
-    stylers: [{ visibility: 'off' }]
-  },
-  {
-    featureType: 'road',
-    elementType: 'all',
-    stylers: [{ visibility: 'on' }]
-  },
-  {
-    featureType: 'road',
-    elementType: 'labels',
-    stylers: [{ visibility: 'on' }]
-  },
-  {
-    featureType: 'administrative',
-    elementType: 'labels',
-    stylers: [{ visibility: 'simplified' }]
-  },
-  {
-    featureType: 'landscape',
-    elementType: 'all',
-    stylers: [{ visibility: 'on' }]
-  },
-  {
-    featureType: 'water',
-    elementType: 'all',
-    stylers: [{ visibility: 'on' }]
-  }
-]
-const ParkingIcon = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 512 512" className={className}>
-    <rect x="122.24" y="212.007" fill="#707487" width="54.477" height="45.189"/>
-    <rect x="228.536" y="212.007" fill="#707487" width="54.928" height="45.189"/>
-    <rect x="334.393" y="212.007" fill="#707487" width="55.367" height="45.189"/>
-    <path fill="#8F96AC" d="M71.059,250.571C71.443,148.983,154.408,66.335,256,66.335s184.557,82.648,184.941,184.236l0.025,6.618h34.729l-0.036-6.679C475.017,130.04,376.478,32.028,256,32.028S36.983,130.04,36.34,250.51l-0.036,6.679h34.729L71.059,250.571z"/>
-    <path fill="#C7CFE2" d="M432.969,261.175v-9.885c0-97.589-79.388-176.982-176.969-176.982S79.031,153.701,79.031,251.29v9.885c0,2.198-1.788,3.986-3.986,3.986H36.327v214.81h77.941V313.433c0-2.198,1.788-3.986,3.986-3.986h275.492c2.198,0,3.986,1.788,3.986,3.986v166.539h77.941v-214.81h-38.718C434.758,265.161,432.969,263.373,432.969,261.175z"/>
-    <rect x="122.24" y="446.097" fill="#EFF2FA" width="267.52" height="33.882"/>
-    <rect x="122.24" y="402.25" fill="#EFF2FA" width="267.52" height="35.875"/>
-    <rect x="122.24" y="360.396" fill="#EFF2FA" width="267.52" height="33.882"/>
-    <rect x="122.24" y="317.426" fill="#EFF2FA" width="267.52" height="34.998"/>
-  </svg>
-)
 
-export default function NewParkingPage() {
+const mapStyles = [
+  { featureType: 'poi', elementType: 'all', stylers: [{ visibility: 'off' }] },
+  { featureType: 'poi.park', elementType: 'geometry', stylers: [{ visibility: 'on' }] },
+  { featureType: 'transit', elementType: 'labels', stylers: [{ visibility: 'off' }] },
+  { featureType: 'transit.station', elementType: 'all', stylers: [{ visibility: 'off' }] },
+]
+
+export default function EditParkingPage() {
   const [name, setName] = useState('')
   const [address, setAddress] = useState('')
   const [district, setDistrict] = useState('')
@@ -116,13 +63,15 @@ export default function NewParkingPage() {
   const [is24_7, setIs24_7] = useState(false)
   const [photos, setPhotos] = useState<string[]>([])
   const [uploading, setUploading] = useState(false)
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [user, setUser] = useState<any>(null)
   const [selectedLocation, setSelectedLocation] = useState<{lat: number, lng: number} | null>(null)
   const [mapCenter, setMapCenter] = useState(defaultCenter)
 
   const router = useRouter()
+  const params = useParams()
   const supabase = createClient()
 
   const { isLoaded } = useJsApiLoader({
@@ -131,29 +80,83 @@ export default function NewParkingPage() {
   })
 
   useEffect(() => {
-    checkUser()
-    getUserLocation()
+    checkUserAndLoadParking()
   }, [])
 
-  const checkUser = async () => {
+  const checkUserAndLoadParking = async () => {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
       router.push('/auth/login')
       return
     }
     setUser(user)
-  }
 
-  const getUserLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const loc = { lat: position.coords.latitude, lng: position.coords.longitude }
-          setMapCenter(loc)
-        },
-        () => {}
-      )
+    const { data: parking } = await supabase
+      .from('parkings')
+      .select('*')
+      .eq('id', params.id)
+      .single()
+
+    if (!parking) {
+      router.push('/owner/dashboard')
+      return
     }
+
+    if (parking.owner_id !== user.id) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', user.id)
+        .single()
+
+      if (!profile?.is_admin) {
+        router.push('/owner/dashboard')
+        return
+      }
+    }
+
+    setName(parking.name || '')
+    setAddress(parking.address || '')
+    setDistrict(parking.district || '')
+    setTotalCapacity(parking.capacity?.toString() || '')
+    setFeatures(parking.features || [])
+    setPhotos(parking.photos || [])
+
+    if (parking.latitude && parking.longitude) {
+      setSelectedLocation({ lat: parking.latitude, lng: parking.longitude })
+      setMapCenter({ lat: parking.latitude, lng: parking.longitude })
+    }
+
+    if (parking.price_ranges && parking.price_ranges.length > 0) {
+      setPriceRanges(parking.price_ranges.map((pr: any, idx: number) => ({
+        id: idx.toString(),
+        minHour: pr.min_hour?.toString() || '0',
+        maxHour: pr.max_hour?.toString() || '',
+        price: pr.price?.toString() || ''
+      })))
+    } else if (parking.hourly_price > 0) {
+      setPriceRanges([{ id: '1', minHour: '0', maxHour: '1', price: parking.hourly_price.toString() }])
+    }
+
+    if (parking.working_hours) {
+      const wh: { [key: string]: WorkingHour } = {}
+      Object.entries(parking.working_hours).forEach(([day, hours]: [string, any]) => {
+        if (hours === '24 Saat') {
+          wh[day] = { open: '00:00', close: '23:59', is24: true, closed: false }
+        } else if (hours === 'Kapalı') {
+          wh[day] = { open: '08:00', close: '22:00', is24: false, closed: true }
+        } else {
+          const parts = hours.split(' - ')
+          wh[day] = { open: parts[0] || '08:00', close: parts[1] || '22:00', is24: false, closed: false }
+        }
+      })
+      setWorkingHours(wh)
+
+      const all24 = Object.values(wh).every(h => h.is24)
+      setIs24_7(all24)
+    }
+
+    setLoading(false)
   }
 
   const onMapClick = useCallback((e: google.maps.MapMouseEvent) => {
@@ -219,14 +222,13 @@ export default function NewParkingPage() {
 
     setUploading(true)
     const fileExt = file.name.split('.').pop()
-    const fileName = `${user.id}-${Date.now()}.${fileExt}`
+    const fileName = user.id + '-' + Date.now() + '.' + fileExt
 
     const { error: uploadError } = await supabase.storage
       .from('parking-photos')
       .upload(fileName, file)
 
     if (uploadError) {
-      console.error('Yükleme hatası:', uploadError)
       setError('Fotoğraf yüklenemedi: ' + uploadError.message)
       setUploading(false)
       return
@@ -247,20 +249,13 @@ export default function NewParkingPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!user) return
-
-    if (!selectedLocation) {
-      setError('Lütfen haritadan otopark konumunu seçin')
+    if (!user || !selectedLocation) {
+      setError('Lütfen haritadan konum seçin')
       return
     }
 
-    setLoading(true)
+    setSaving(true)
     setError('')
-
-    const slug = name.toLowerCase()
-      .replace(/\s+/g, '-')
-      .replace(/[^a-z0-9-]/g, '')
-      + '-' + Date.now()
 
     const firstPrice = priceRanges[0]?.price || '0'
 
@@ -271,23 +266,20 @@ export default function NewParkingPage() {
       } else if (hours.is24 || is24_7) {
         formattedWorkingHours[day] = '24 Saat'
       } else {
-        formattedWorkingHours[day] = `${hours.open} - ${hours.close}`
+        formattedWorkingHours[day] = hours.open + ' - ' + hours.close
       }
     })
 
-    const { error: insertError } = await supabase
+    const { error: updateError } = await supabase
       .from('parkings')
-      .insert({
-        owner_id: user.id,
+      .update({
         name,
-        slug,
         address,
         district,
         latitude: selectedLocation.lat,
         longitude: selectedLocation.lng,
         hourly_price: parseFloat(firstPrice),
-        capacity: parseInt(totalCapacity),
-        status: 'available',
+        capacity: parseInt(totalCapacity) || 0,
         features: features,
         price_ranges: priceRanges.map(pr => ({
           min_hour: parseInt(pr.minHour),
@@ -296,20 +288,24 @@ export default function NewParkingPage() {
         })),
         working_hours: formattedWorkingHours,
         photos: photos,
-        is_active: true,
-        is_claimed: true,
-        trust_score: 5.0
       })
-      .select()
-      .single()
+      .eq('id', params.id)
 
-    if (insertError) {
-      setError('Otopark eklenemedi: ' + insertError.message)
-      setLoading(false)
+    if (updateError) {
+      setError('Otopark güncellenemedi: ' + updateError.message)
+      setSaving(false)
       return
     }
 
     router.push('/owner/dashboard')
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-950">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500"></div>
+      </div>
+    )
   }
 
   return (
@@ -319,12 +315,9 @@ export default function NewParkingPage() {
           <Link href="/owner/dashboard" className="w-10 h-10 bg-slate-800 rounded-xl flex items-center justify-center hover:bg-slate-700 transition-colors">
             <ArrowLeft className="w-5 h-5 text-slate-400" />
           </Link>
-          <div className="flex items-center gap-3">
-            <ParkingIcon className="w-10 h-10" />
-            <div>
-              <h1 className="text-xl font-bold text-white">Yeni Otopark Ekle</h1>
-              <p className="text-sm text-slate-400">Otopark bilgilerini girin</p>
-            </div>
+          <div>
+            <h1 className="text-xl font-bold text-white">Otopark Düzenle</h1>
+            <p className="text-sm text-slate-400">Otopark bilgilerini güncelleyin</p>
           </div>
         </div>
       </header>
@@ -351,7 +344,6 @@ export default function NewParkingPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full px-4 py-3 bg-slate-900/50 border border-slate-600 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                  placeholder="Örnek: Merkez Otopark"
                   required
                 />
               </div>
@@ -363,7 +355,6 @@ export default function NewParkingPage() {
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   className="w-full px-4 py-3 bg-slate-900/50 border border-slate-600 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                  placeholder="Sokak, Bina No, Mahalle"
                   required
                 />
               </div>
@@ -375,21 +366,18 @@ export default function NewParkingPage() {
                   value={district}
                   onChange={(e) => setDistrict(e.target.value)}
                   className="w-full px-4 py-3 bg-slate-900/50 border border-slate-600 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                  placeholder="Örnek: Kadıköy"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">Toplam Kapasite (Araç Sayısı)</label>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Toplam Kapasite</label>
                 <input
                   type="number"
                   value={totalCapacity}
                   onChange={(e) => setTotalCapacity(e.target.value)}
                   className="w-full px-4 py-3 bg-slate-900/50 border border-slate-600 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                  placeholder="50"
                   min="1"
-                  required
                 />
               </div>
             </div>
@@ -400,9 +388,8 @@ export default function NewParkingPage() {
               <Camera className="w-5 h-5 text-cyan-400" />
               Fotoğraflar
             </h2>
-            <p className="text-sm text-slate-400 mb-4">Otoparkınızın fotoğraflarını ekleyin (max 5 adet)</p>
             
-            <label className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${uploading ? 'border-cyan-500 bg-cyan-500/10' : 'border-slate-600 hover:border-slate-500 hover:bg-slate-800/50'} ${photos.length >= 5 ? 'opacity-50 cursor-not-allowed' : ''}`}>
+            <label className={'flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-xl cursor-pointer transition-colors ' + (uploading ? 'border-cyan-500 bg-cyan-500/10' : 'border-slate-600 hover:border-slate-500') + (photos.length >= 5 ? ' opacity-50 cursor-not-allowed' : '')}>
               <input
                 type="file"
                 accept="image/*"
@@ -418,21 +405,20 @@ export default function NewParkingPage() {
               ) : (
                 <>
                   <Camera className="w-8 h-8 text-slate-500 mb-2" />
-                  <span className="text-slate-400 text-sm">Fotoğraf yüklemek için tıklayın</span>
-                  <span className="text-slate-500 text-xs mt-1">{photos.length}/5 fotoğraf</span>
+                  <span className="text-slate-400 text-sm">Fotoğraf yükle ({photos.length}/5)</span>
                 </>
               )}
             </label>
 
             {photos.length > 0 && (
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-4">
+              <div className="grid grid-cols-3 gap-3 mt-4">
                 {photos.map((photo, index) => (
-                  <div key={index} className="relative group aspect-video rounded-xl overflow-hidden bg-slate-900">
-                    <img src={photo} alt={`Fotoğraf ${index + 1}`} className="w-full h-full object-cover" />
+                  <div key={index} className="relative aspect-video rounded-xl overflow-hidden bg-slate-900">
+                    <img src={photo} alt="" className="w-full h-full object-cover" />
                     <button
                       type="button"
                       onClick={() => removePhoto(index)}
-                      className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -445,34 +431,23 @@ export default function NewParkingPage() {
           <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50">
             <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
               <MapPin className="w-5 h-5 text-cyan-400" />
-              Konum Seçin
+              Konum
             </h2>
-            <p className="text-sm text-slate-400 mb-4">Haritaya tıklayarak otoparkınızın konumunu seçin</p>
             
             {isLoaded ? (
               <GoogleMap
-              mapContainerStyle={mapContainerStyle}
-              center={mapCenter}
-              zoom={13}
-              onClick={onMapClick}
-              options={{
-                disableDefaultUI: true,
-                zoomControl: true,
-                styles: mapStyles,
-              }}
+                mapContainerStyle={mapContainerStyle}
+                center={mapCenter}
+                zoom={15}
+                onClick={onMapClick}
+                options={{ disableDefaultUI: true, zoomControl: true, styles: mapStyles }}
               >
-                {selectedLocation && (
-                  <Marker position={selectedLocation} />
-                )}
+                {selectedLocation && <Marker position={selectedLocation} />}
               </GoogleMap>
             ) : (
               <div className="w-full h-[300px] bg-slate-900/50 rounded-xl flex items-center justify-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-500"></div>
               </div>
-            )}
-            
-            {selectedLocation && (
-              <p className="text-sm text-cyan-400 mt-3">Konum seçildi: {selectedLocation.lat.toFixed(6)}, {selectedLocation.lng.toFixed(6)}</p>
             )}
           </div>
 
@@ -485,7 +460,7 @@ export default function NewParkingPage() {
               <button
                 type="button"
                 onClick={toggle24_7}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${is24_7 ? 'bg-green-500/20 text-green-400 border border-green-500/50' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'}`}
+                className={'px-4 py-2 rounded-xl text-sm font-medium transition-colors ' + (is24_7 ? 'bg-green-500/20 text-green-400 border border-green-500/50' : 'bg-slate-700 text-slate-300')}
               >
                 {is24_7 ? '✓ 7/24 Açık' : '7/24 Açık'}
               </button>
@@ -496,37 +471,28 @@ export default function NewParkingPage() {
                 {Object.entries(workingHours).map(([day, hours]) => (
                   <div key={day} className="flex items-center gap-3 p-3 bg-slate-900/50 rounded-xl">
                     <span className="w-24 text-sm font-medium text-slate-300">{day}</span>
-                    
                     <button
                       type="button"
                       onClick={() => updateWorkingHour(day, 'closed', !hours.closed)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${hours.closed ? 'bg-red-500/20 text-red-400' : 'bg-slate-700 text-slate-400 hover:bg-slate-600'}`}
+                      className={'px-3 py-1.5 rounded-lg text-xs font-medium ' + (hours.closed ? 'bg-red-500/20 text-red-400' : 'bg-slate-700 text-slate-400')}
                     >
                       {hours.closed ? 'Kapalı' : 'Açık'}
                     </button>
-
                     {!hours.closed && (
                       <>
                         <input
                           type="time"
                           value={hours.open}
                           onChange={(e) => updateWorkingHour(day, 'open', e.target.value)}
-                          className="px-3 py-1.5 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                          className="px-3 py-1.5 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
                         />
                         <span className="text-slate-500">-</span>
                         <input
                           type="time"
                           value={hours.close}
                           onChange={(e) => updateWorkingHour(day, 'close', e.target.value)}
-                          className="px-3 py-1.5 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                          className="px-3 py-1.5 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
                         />
-                        <button
-                          type="button"
-                          onClick={() => updateWorkingHour(day, 'is24', !hours.is24)}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${hours.is24 ? 'bg-cyan-500/20 text-cyan-400' : 'bg-slate-700 text-slate-400 hover:bg-slate-600'}`}
-                        >
-                          24 Saat
-                        </button>
                       </>
                     )}
                   </div>
@@ -544,50 +510,45 @@ export default function NewParkingPage() {
               <button
                 type="button"
                 onClick={addPriceRange}
-                className="flex items-center gap-1 px-3 py-1.5 bg-cyan-500/20 text-cyan-400 rounded-lg text-sm font-medium hover:bg-cyan-500/30 transition-colors"
+                className="flex items-center gap-1 px-3 py-1.5 bg-cyan-500/20 text-cyan-400 rounded-lg text-sm font-medium"
               >
                 <Plus className="w-4 h-4" />
-                Aralık Ekle
+                Ekle
               </button>
             </div>
 
             <div className="space-y-3">
               {priceRanges.map((range) => (
-                <div key={range.id} className="flex items-center gap-3 p-4 bg-slate-900/50 rounded-xl border border-slate-700/30">
+                <div key={range.id} className="flex items-center gap-3 p-4 bg-slate-900/50 rounded-xl">
                   <div className="flex-1 grid grid-cols-3 gap-3">
                     <div>
-                      <label className="block text-xs text-slate-400 mb-1">Başlangıç (saat)</label>
+                      <label className="block text-xs text-slate-400 mb-1">Min Saat</label>
                       <input
                         type="number"
                         value={range.minHour}
                         onChange={(e) => updatePriceRange(range.id, 'minHour', e.target.value)}
-                        className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                        placeholder="0"
+                        className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
                         min="0"
-                        required
                       />
                     </div>
                     <div>
-                      <label className="block text-xs text-slate-400 mb-1">Bitiş (saat)</label>
+                      <label className="block text-xs text-slate-400 mb-1">Max Saat</label>
                       <input
                         type="number"
                         value={range.maxHour}
                         onChange={(e) => updatePriceRange(range.id, 'maxHour', e.target.value)}
-                        className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                        placeholder="24+"
+                        className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
                         min="1"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs text-slate-400 mb-1">Ücret (TL)</label>
+                      <label className="block text-xs text-slate-400 mb-1">Fiyat (TL)</label>
                       <input
                         type="number"
                         value={range.price}
                         onChange={(e) => updatePriceRange(range.id, 'price', e.target.value)}
-                        className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                        placeholder="30"
+                        className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
                         min="0"
-                        required
                       />
                     </div>
                   </div>
@@ -595,7 +556,7 @@ export default function NewParkingPage() {
                     <button
                       type="button"
                       onClick={() => removePriceRange(range.id)}
-                      className="w-10 h-10 flex items-center justify-center text-red-400 hover:bg-red-500/20 rounded-lg transition-colors"
+                      className="w-10 h-10 flex items-center justify-center text-red-400 hover:bg-red-500/20 rounded-lg"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -603,7 +564,6 @@ export default function NewParkingPage() {
                 </div>
               ))}
             </div>
-            <p className="text-xs text-slate-500 mt-3">Örnek: 0-1 saat 30 TL, 1-3 saat 50 TL, 3+ saat 80 TL</p>
           </div>
 
           <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50">
@@ -621,7 +581,7 @@ export default function NewParkingPage() {
                   className={'flex items-center gap-2 px-4 py-3 rounded-xl border transition-all ' + 
                     (features.includes(feature.id) 
                       ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-400' 
-                      : 'bg-slate-900/50 border-slate-600 text-slate-400 hover:border-slate-500'
+                      : 'bg-slate-900/50 border-slate-600 text-slate-400'
                     )}
                 >
                   <feature.icon className="w-4 h-4" />
@@ -640,10 +600,10 @@ export default function NewParkingPage() {
             </Link>
             <button
               type="submit"
-              disabled={loading}
+              disabled={saving}
               className="flex-1 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-xl font-semibold hover:from-cyan-600 hover:to-blue-600 disabled:opacity-50 shadow-lg shadow-cyan-500/25"
             >
-              {loading ? 'Ekleniyor...' : 'Otopark Ekle'}
+              {saving ? 'Kaydediliyor...' : 'Kaydet'}
             </button>
           </div>
         </form>

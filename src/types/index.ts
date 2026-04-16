@@ -1,19 +1,26 @@
 export interface Parking {
   id: string
-  owner_id: string
+  owner_id: string | null
   name: string
+  slug: string
   address: string
   district: string
   latitude: number
   longitude: number
   hourly_price: number
-  total_capacity: number
-  current_occupancy: number
+  capacity: number
   status: 'available' | 'limited' | 'full'
   features: string[]
-  trust_score: number
   is_active: boolean
+  trust_score: number
   created_at: string
+  updated_at: string
+  photos?: string[]
+  price_ranges?: { min_hour: number; max_hour: number | null; price: number }[]
+  working_hours?: { [key: string]: string }
+  is_claimed?: boolean
+  claimed_at?: string
+  current_occupancy?: number
 }
 
 export interface Reservation {

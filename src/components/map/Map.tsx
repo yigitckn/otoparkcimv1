@@ -86,35 +86,37 @@ export default function Map({ parkings, selectedParking, userLocation, onMarkerC
     setMap(null)
   }, [])
 
-  const getMarkerIcon = (status: string, isSelected: boolean) => {
+    const getMarkerIcon = (status: string, isSelected: boolean) => {
   const colors = {
-    available: { main: '#22c55e', dark: '#16a34a', light: '#4ade80' },
-    limited: { main: '#eab308', dark: '#ca8a04', light: '#facc15' },
-    full: { main: '#ef4444', dark: '#dc2626', light: '#f87171' }
+    available: { from: '#22c55e', to: '#10b981' },
+    limited: { from: '#f59e0b', to: '#f97316' },
+    full: { from: '#ef4444', to: '#e11d48' }
   }
   
   const colorSet = status === 'available' ? colors.available : status === 'limited' ? colors.limited : colors.full
   const scale = isSelected ? 1.2 : 1
-  const size = { w: 28 * scale, h: 35 * scale }
+  const w = 32 * scale
+  const h = 42 * scale
   
   return {
     url: `data:image/svg+xml,${encodeURIComponent(`
-      <svg xmlns="http://www.w3.org/2000/svg" width="${size.w}" height="${size.h}" viewBox="0 0 28 35">
+      <svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 32 42">
         <defs>
-          <linearGradient id="grad" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" style="stop-color:${colorSet.light};stop-opacity:1" />
-            <stop offset="100%" style="stop-color:${colorSet.dark};stop-opacity:1" />
+          <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:${colorSet.from}"/>
+            <stop offset="100%" style="stop-color:${colorSet.to}"/>
           </linearGradient>
-          <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+          <filter id="shadow" x="-25%" y="-15%" width="150%" height="150%">
             <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.3"/>
           </filter>
         </defs>
-        <path d="M14 0 C6.268 0 0 6.268 0 14 C0 24.5 14 35 14 35 C14 35 28 24.5 28 14 C28 6.268 21.732 0 14 0 Z" fill="url(#grad)" filter="url(#shadow)" stroke="${isSelected ? '#ffffff' : 'none'}" stroke-width="${isSelected ? 2 : 0}"/>
-        <text x="14" y="18" text-anchor="middle" fill="white" font-size="12" font-weight="bold" font-family="Arial" style="text-shadow: 0 1px 2px rgba(0,0,0,0.3)">P</text>
+        <path d="M16 0C7.2 0 0 7.2 0 16c0 12 16 26 16 26s16-14 16-26C32 7.2 24.8 0 16 0z" fill="url(#grad)" filter="url(#shadow)" ${isSelected ? 'stroke="white" stroke-width="2"' : ''}/>
+        <circle cx="16" cy="14" r="9" fill="white"/>
+        <text x="16" y="18" text-anchor="middle" fill="${colorSet.to}" font-size="11" font-weight="bold" font-family="system-ui, sans-serif">P</text>
       </svg>
     `)}`,
-    scaledSize: new google.maps.Size(size.w, size.h),
-    anchor: new google.maps.Point(size.w / 2, size.h),
+    scaledSize: new google.maps.Size(w, h),
+    anchor: new google.maps.Point(w / 2, h),
   }
 }
 

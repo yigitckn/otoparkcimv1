@@ -1,0 +1,38 @@
+name: İSPARK Güncelle
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: İSPARK durumlarını güncelle
+        run: |
+          curl -s https://api.ibb.gov.tr/ispark/Park | \
+          node -e "
+            const https = require('https');
+            let data = '';
+            process.stdin.on('data', chunk => data += chunk);
+            process.stdin.on('end', async () => {
+              const parks = JSON.parse(data);
+              for (const p of parks) {
+                const status = p.emptyCapacity > 10 ? 'available' : p.emptyCapacity > 0 ? 'limited' : 'full';
+                await fetch(
+                  'https://obmfsfwoanrgsuidylae.supabase.co/rest/v1/parkings?external_id=eq.' + p.parkID + '&source=eq.ispark',
+                  {
+                    method: 'PATCH',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'apikey': '${{ secrets.SUPABASE_KEY }}',
+                      'Authorization': 'Bearer ${{ secrets.SUPABASE_KEY }}'
+                    },
+                    body: JSON.stringify({ status })
+                  }
+                );
+              }
+              console.log(parks.length + ' otopark güncellendi');
+            });
+          "
