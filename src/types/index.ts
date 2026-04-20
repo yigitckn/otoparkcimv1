@@ -21,6 +21,8 @@ export interface Parking {
   is_claimed?: boolean
   claimed_at?: string
   current_occupancy?: number
+  source?: string
+  external_id?: string
 }
 
 export interface Reservation {

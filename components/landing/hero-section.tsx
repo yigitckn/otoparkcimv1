@@ -48,7 +48,7 @@ export function HeroSection() {
                   <MapPin className="h-5 w-5 text-blue-600" />
                 </div>
               </div>
-              <div className="text-2xl md:text-3xl font-bold text-slate-800">50+</div>
+              <div className="text-2xl md:text-3xl font-bold text-slate-800">300+</div>
               <div className="text-sm text-slate-500">Otopark</div>
             </div>
             <div className="text-center">

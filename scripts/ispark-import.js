@@ -1,72 +1,41 @@
-const SUPABASE_URL = 'https://obmfsfwoanrgsuidylae.supabase.co'
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ibWZzZndvYW5yZ3N1aWR5bGFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNDYyNTksImV4cCI6MjA5MDcyMjI1OX0.Y1gp7CoGMHQZ3EhubobpzsrYg3yZauGqrO0kqKZYRIs'
+require('dotenv').config({ path: '.env.local' })
 
-async function importIspark() {
-    console.log('İSPARK verileri çekiliyor...')
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
+const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-    const response = await fetch('https://api.ibb.gov.tr/ispark/Park')
-    const data = await response.json()
+async function updateIsparkPrices() {
+    console.log('İSPARK fiyatları güncelleniyor...')
 
-    console.log(data.length + ' otopark bulundu')
+    const priceRanges = [
+        { min_hour: 0, max_hour: 1, price: 170 },
+        { min_hour: 1, max_hour: 2, price: 220 },
+        { min_hour: 2, max_hour: 4, price: 300 },
+        { min_hour: 4, max_hour: 8, price: 370 },
+        { min_hour: 8, max_hour: null, price: 500 }
+    ]
 
-    const parkings = data.map(p => {
-        const name = 'İSPARK ' + (p.parkName || 'Otopark')
-        const slug = name
-            .toLowerCase()
-            .replace(/ş/g, 's').replace(/ı/g, 'i').replace(/ğ/g, 'g')
-            .replace(/ü/g, 'u').replace(/ö/g, 'o').replace(/ç/g, 'c')
-            .replace(/[^a-z0-9]+/g, '-')
-            .replace(/-+/g, '-')
-            .replace(/^-|-$/g, '') + '-' + p.parkID
-
-        return {
-            name: name,
-            slug: slug,
-            address: p.parkName || '',
-            district: p.district || 'İstanbul',
-            latitude: parseFloat(p.lat) || 0,
-            longitude: parseFloat(p.lng) || 0,
-            capacity: parseInt(p.capacity) || 0,
-            hourly_price: 0,
-            status: p.emptyCapacity > 10 ? 'available' : p.emptyCapacity > 0 ? 'limited' : 'full',
-            is_active: true,
-            is_claimed: false,
-            source: 'ispark',
-            external_id: String(p.parkID),
-            features: p.parkType === 'KAPALI OTOPARK' ? ['covered'] : []
-        }
-    })
-
-    console.log('Supabase\'e ekleniyor...')
-
-    let success = 0
-    let failed = 0
-
-    for (let i = 0; i < parkings.length; i += 50) {
-        const batch = parkings.slice(i, i + 50)
-
-        const res = await fetch(SUPABASE_URL + '/rest/v1/parkings', {
-            method: 'POST',
+    const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/parkings?source=eq.ispark`, {
+            method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
                 'apikey': SUPABASE_KEY,
-                'Authorization': 'Bearer ' + SUPABASE_KEY,
-                'Prefer': 'resolution=merge-duplicates'
+                'Authorization': `Bearer ${SUPABASE_KEY}`,
+                'Prefer': 'return=minimal'
             },
-            body: JSON.stringify(batch)
-        })
-
-        if (res.ok) {
-            success += batch.length
-            console.log(success + '/' + parkings.length + ' eklendi')
-        } else {
-            failed += batch.length
-            const err = await res.text()
-            console.error('Hata:', err)
+            body: JSON.stringify({
+                hourly_price: 170,
+                price_ranges: priceRanges
+            })
         }
-    }
+    )
 
-    console.log('Tamamlandı! Başarılı: ' + success + ', Hatalı: ' + failed)
+    if (res.ok) {
+        console.log('Tüm İSPARK otoparkları güncellendi!')
+    } else {
+        const err = await res.text()
+        console.error('Hata:', err)
+    }
 }
 
-importIspark()
+updateIsparkPrices()
