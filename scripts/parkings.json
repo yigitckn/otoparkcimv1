@@ -1,0 +1,1234 @@
+[
+  {
+    "name": "Kuşdili Outdoor Parking",
+    "address": "Osmanağa Mahallesi Kuşdili Caddesi, Pazaryolu sokak No:1A",
+    "district": "Kadıköy",
+    "latitude": 40.9894185,
+    "longitude": 29.032506,
+    "place_id": "ChIJF9A1vm-4yhQR1I3eR0tjGDI"
+  },
+  {
+    "name": "capital Parking",
+    "address": "Caferağa, Neşet Ömer Sokak No:3",
+    "district": "Kadıköy",
+    "latitude": 40.9898725,
+    "longitude": 29.0232047,
+    "place_id": "ChIJQWe6jme4yhQRW49jsulRbts"
+  },
+  {
+    "name": "TEPE NAUTILUS OTOPARK GİRİŞİ",
+    "address": "Acıbadem, Fatih Sokak No:16",
+    "district": "Kadıköy",
+    "latitude": 41.0004331,
+    "longitude": 29.0319126,
+    "place_id": "ChIJaRP0-BK4yhQRWzsGCB9-XR4"
+  },
+  {
+    "name": "İspark",
+    "address": "Eğitim, Kasap İsmail Sokak",
+    "district": "Kadıköy",
+    "latitude": 40.9921375,
+    "longitude": 29.0423947,
+    "place_id": "ChIJXxLke3S4yhQRk_diJaRDS98"
+  },
+  {
+    "name": "Huzur Otopark",
+    "address": "Caferağa, Rızapaşa Sokağı No:31",
+    "district": "Kadıköy",
+    "latitude": 40.984908,
+    "longitude": 29.0217611,
+    "place_id": "ChIJ_5HzMl64yhQRGAOZ7YXmR3o"
+  },
+  {
+    "name": "Balden Grup",
+    "address": "Acıbadem, Pomak Sokak No:14",
+    "district": "Kadıköy",
+    "latitude": 40.9989453,
+    "longitude": 29.0410518,
+    "place_id": "ChIJy9o2kgu4yhQRo79OM6F559A"
+  },
+  {
+    "name": "Haydarpaşa İspark Katlı Otoparkı",
+    "address": "Selimiye, Doktor Eyüp Aksoy Caddesi",
+    "district": "Kadıköy",
+    "latitude": 41.0048181,
+    "longitude": 29.0250983,
+    "place_id": "ChIJL0GpeRa4yhQRDDYP8___IkU"
+  },
+  {
+    "name": "Meguiar's",
+    "address": "Barbaros, Seyit Ahmet Deresi Sokağı No:5",
+    "district": "Kadıköy",
+    "latitude": 41.0139793,
+    "longitude": 29.0291444,
+    "place_id": "ChIJe0lpGBy4yhQRYYPmeGuc7FQ"
+  },
+  {
+    "name": "İspark",
+    "address": "Ünalan, Baraj Yolu Alt Sokak No:47",
+    "district": "Kadıköy",
+    "latitude": 40.9988178,
+    "longitude": 29.0555156,
+    "place_id": "ChIJ32BNA-_HyhQReeqRmh1Y_nM"
+  },
+  {
+    "name": "İspark",
+    "address": "Zeynep Kamil, Doktor Burhanettin Üstünel Sokağı",
+    "district": "Kadıköy",
+    "latitude": 41.0151804,
+    "longitude": 29.0245721,
+    "place_id": "ChIJdaQi_h64yhQRdWf_r2AUyMU"
+  },
+  {
+    "name": "Dalyan Club Spor Merkez Otoparkı",
+    "address": "Fenerbahçe, Atlıhan Sokak No:3",
+    "district": "Kadıköy",
+    "latitude": 40.9712182,
+    "longitude": 29.0410887,
+    "place_id": "ChIJOxkKvIO4yhQR9IMz9Gqb0b0"
+  },
+  {
+    "name": "İspark Fenerbahçe Marina",
+    "address": "Fenerbahçe",
+    "district": "Kadıköy",
+    "latitude": 40.968885,
+    "longitude": 29.0363791,
+    "place_id": "ChIJ_QHWzZq4yhQRkfKTHnqdxpU"
+  },
+  {
+    "name": "ÜSKÜDAR CARCİTY RENT A CAR",
+    "address": "Barbaros, Nuhkuyusu Caddesi No:84 D:b",
+    "district": "Kadıköy",
+    "latitude": 41.01901809999999,
+    "longitude": 29.0336854,
+    "place_id": "ChIJ7016Zfe3yhQRpsnWk-dhyuo"
+  },
+  {
+    "name": "Yilmaz Oto Garaji",
+    "address": "Osmanağa, Bayramyeri Sokağı No:2",
+    "district": "Kadıköy",
+    "latitude": 40.9920369,
+    "longitude": 29.0294902,
+    "place_id": "ChIJFWJdF2-4yhQReYFMkqfRYzI"
+  },
+  {
+    "name": "Kudret Eye Hospital Parking Lot",
+    "address": "Acıbadem, Fatih Sokak Otopark 6-1",
+    "district": "Kadıköy",
+    "latitude": 40.998396,
+    "longitude": 29.032887,
+    "place_id": "ChIJr84ryBK4yhQRr0ecKuQASRw"
+  },
+  {
+    "name": "Aral Otopark",
+    "address": "Osmanağa, Reşitefendi Sokağı No:45",
+    "district": "Kadıköy",
+    "latitude": 40.992885,
+    "longitude": 29.0281,
+    "place_id": "ChIJg_LNMWm4yhQRzOtbvx0a1bg"
+  },
+  {
+    "name": "Çinili Otopark",
+    "address": "Osmanağa, Yoğurtçu Şükrü Sokak No:36",
+    "district": "Kadıköy",
+    "latitude": 40.9923254,
+    "longitude": 29.0276982,
+    "place_id": "ChIJs6dE2Gi4yhQRBwv0FWJowX4"
+  },
+  {
+    "name": "ROYAL 61 KAPALI OTOPARK (1)",
+    "address": "Rasimpaşa, Misak-ı Milli Sokağı No:55",
+    "district": "Kadıköy",
+    "latitude": 40.9933106,
+    "longitude": 29.0276877,
+    "place_id": "ChIJs4KdoWS5yhQRtwj6PGuw4u0"
+  },
+  {
+    "name": "Kadıköy Otopark",
+    "address": "Rasimpaşa, Nakil Sokak No:15",
+    "district": "Kadıköy",
+    "latitude": 40.9932975,
+    "longitude": 29.02750199999999,
+    "place_id": "ChIJrReLO2m4yhQRHyt_IaRXvKE"
+  },
+  {
+    "name": "Kayatur Otopark",
+    "address": "Osmanağa, Talimhane Sokak",
+    "district": "Kadıköy",
+    "latitude": 40.9929546,
+    "longitude": 29.0286559,
+    "place_id": "ChIJkzSTzG64yhQRUWdKLCitFQ0"
+  },
+  {
+    "name": "Opera Hotel Bosphorus",
+    "address": "Ömer Avni, Gümüşsuyu, İnönü Caddesi No:26",
+    "district": "Beşiktaş",
+    "latitude": 41.0366815,
+    "longitude": 28.9906275,
+    "place_id": "ChIJfYqvKC63yhQRFX0-NsxAzfk"
+  },
+  {
+    "name": "Cetinkaya Insaat",
+    "address": "Yayla, Yay Meydanı Caddesi 1/3",
+    "district": "Beşiktaş",
+    "latitude": 41.0467165,
+    "longitude": 28.9749926,
+    "place_id": "ChIJw-oi8kG3yhQRAiDB-fOUPC4"
+  },
+  {
+    "name": "Yıldız Korusu İSPARK",
+    "address": "Yıldız",
+    "district": "Beşiktaş",
+    "latitude": 41.0477008,
+    "longitude": 29.0146753,
+    "place_id": "ChIJm1_Y7Lq3yhQRV98AEynli3g"
+  },
+  {
+    "name": "Teşvikiye Garaj | Kapalı Otopark | Araba Yıkama | Detaylı İç Temizlik",
+    "address": "Teşvikiye, Av. Süreyya Ağaoğlu Sokağı 33/1",
+    "district": "Beşiktaş",
+    "latitude": 41.050714,
+    "longitude": 28.99743299999999,
+    "place_id": "ChIJazlZvAm3yhQRJR1xMD37etY"
+  },
+  {
+    "name": "AutoClub Fulya",
+    "address": "Dikilitaş, Hakkı Yeten Caddesi No:10",
+    "district": "Beşiktaş",
+    "latitude": 41.0543728,
+    "longitude": 29.00002,
+    "place_id": "ChIJsUNWjge3yhQRd_76qIx3HsE"
+  },
+  {
+    "name": "Euroyonetim Park Vale Noktası",
+    "address": "güzelbahçe sok no 23b nişantaşı - istanbul, şişli",
+    "district": "Beşiktaş",
+    "latitude": 41.0533384,
+    "longitude": 28.9946094,
+    "place_id": "ChIJbV_YwAi3yhQRX12f3dOR-nk"
+  },
+  {
+    "name": "Euroyönetim Park NİŞANTAŞI - Mim Plaza",
+    "address": "9, Meşrutiyet, Kodaman Sokak No:7",
+    "district": "Beşiktaş",
+    "latitude": 41.0532065,
+    "longitude": 28.9923324,
+    "place_id": "ChIJ0zJWIA-3yhQRFzT4TB6VNeE"
+  },
+  {
+    "name": "Havas",
+    "address": "Paşalimanı Cad. No:41, Üsküdar",
+    "district": "Beşiktaş",
+    "latitude": 41.030932,
+    "longitude": 29.02004999999999,
+    "place_id": "ChIJGxMT95K3yhQRY2CXONWrQJc"
+  },
+  {
+    "name": "İspark",
+    "address": "Balmumcu, Gazi Umar Paşa Sk, Balmumcu-Beşiktaş",
+    "district": "Beşiktaş",
+    "latitude": 41.0582919,
+    "longitude": 29.0111472,
+    "place_id": "ChIJofxJr7K3yhQRglPtlh289TM"
+  },
+  {
+    "name": "İspark",
+    "address": "Aziz Mahmut Hüdayi, Harem Sahil Yolu Caddesi No:64",
+    "district": "Beşiktaş",
+    "latitude": 41.0255373,
+    "longitude": 29.00976149999999,
+    "place_id": "ChIJwav-Noa3yhQR1_kL-amXN_0"
+  },
+  {
+    "name": "İspark",
+    "address": "Kuloğlu, Sıraselviler Caddesi 84/1",
+    "district": "Beşiktaş",
+    "latitude": 41.0321111,
+    "longitude": 28.9859439,
+    "place_id": "ChIJ9c-vGWO3yhQRDA83SwweHn8"
+  },
+  {
+    "name": "Katibim Parking",
+    "address": "Mimar Sinan Mah. Selman-ı Pak Cad, Abdülfeyyaz Sokağı No:4",
+    "district": "Beşiktaş",
+    "latitude": 41.02515080000001,
+    "longitude": 29.0210438,
+    "place_id": "ChIJBb48loy3yhQRC9caJtyBzRw"
+  },
+  {
+    "name": "7/24 açık Gencal Otopark ve Oto Yıkama",
+    "address": "Cumhuriyet, Sadık Şendil Sokak No:16/18",
+    "district": "Beşiktaş",
+    "latitude": 41.05487129999999,
+    "longitude": 28.9825924,
+    "place_id": "ChIJlYvaNxG3yhQRlGxTr2VViUQ"
+  },
+  {
+    "name": "Erdem Otopark",
+    "address": "Tomtom, Nur-u Ziya Sokağı no:6",
+    "district": "Beşiktaş",
+    "latitude": 41.031546,
+    "longitude": 28.9768975,
+    "place_id": "ChIJZeInIWC3yhQRnFGVV4EbI1o"
+  },
+  {
+    "name": "Damla Sk. Otoparkı",
+    "address": "Mecidiyeköy Mahallesi, Damla Sokak No:4",
+    "district": "Beşiktaş",
+    "latitude": 41.06735,
+    "longitude": 29.00047,
+    "place_id": "ChIJreJMCVa2yhQRT2oUwIbf68Y"
+  },
+  {
+    "name": "İspark",
+    "address": "Asmalı Mescit, Meşrutiyet Caddesi No:76",
+    "district": "Beşiktaş",
+    "latitude": 41.0325621,
+    "longitude": 28.9746112,
+    "place_id": "ChIJAcrBil-3yhQReIzuY9JJLog"
+  },
+  {
+    "name": "Sesa",
+    "address": "Mecidiyeköy Mahallesi, Büyükdere Caddesi Hürmet Keçeli İş Merkezi No.53 D: 5, Kat No-2",
+    "district": "Beşiktaş",
+    "latitude": 41.0669023,
+    "longitude": 28.99669699999999,
+    "place_id": "ChIJ0U1D_QG3yhQRNON3tsDCR8w"
+  },
+  {
+    "name": "Dosma Otopark",
+    "address": "Merkez, İskenderoğlu Sokak No:23",
+    "district": "Beşiktaş",
+    "latitude": 41.0623834,
+    "longitude": 28.9847833,
+    "place_id": "ChIJsX1zfhy3yhQRvjX3AEaKFU4"
+  },
+  {
+    "name": "Kasımpaşa Sports Club Outdoor parking",
+    "address": "Yahya Kahya, Aslan Sokak Kasımpaşa",
+    "district": "Beşiktaş",
+    "latitude": 41.03278679999999,
+    "longitude": 28.97378329999999,
+    "place_id": "ChIJ144Kh1-3yhQRKAiCbbhM7qs"
+  },
+  {
+    "name": "İspark",
+    "address": "Esentepe, Barbaros Bulvarı, Şişli",
+    "district": "Beşiktaş",
+    "latitude": 41.06834569999999,
+    "longitude": 29.0123239,
+    "place_id": "ChIJxXW-nU-2yhQR9unk_fXKYl8"
+  },
+  {
+    "name": "Kat Otopark",
+    "address": "Merkez, Çifte Cevizler Caddesi No:23",
+    "district": "Şişli",
+    "latitude": 41.06278200000001,
+    "longitude": 28.9829948,
+    "place_id": "ChIJXwNyCRy3yhQRwXiznClzMgQ"
+  },
+  {
+    "name": "EVA Beauty Center",
+    "address": "Trump Tower Ofis Kapısı Karşısı, Kuştepe, Bestekar Şakir Ağa Sokak No:8",
+    "district": "Şişli",
+    "latitude": 41.069,
+    "longitude": 28.99151140000001,
+    "place_id": "ChIJyeh-J_22yhQRK-cTm-s0-y0"
+  },
+  {
+    "name": "EASYPARK",
+    "address": "Perpa Ticaret Merkezi B-Blok Kat:2 No:50 Okmeydanı",
+    "district": "Şişli",
+    "latitude": 41.061669,
+    "longitude": 28.971403,
+    "place_id": "ChIJ585LTyO3yhQRlSv7eOfZMuo"
+  },
+  {
+    "name": "Park waterfall",
+    "address": "Gürsel, atiye sokak no:1",
+    "district": "Şişli",
+    "latitude": 41.0708127,
+    "longitude": 28.9789864,
+    "place_id": "ChIJO_c4fAy3yhQRXMytpk-cr2I"
+  },
+  {
+    "name": "Motobike Vale park ve turizm ltd.sti.",
+    "address": "Halil Rıfat Paşa, Yüzer Havuz Sokak No:1639",
+    "district": "Şişli",
+    "latitude": 41.0597076,
+    "longitude": 28.9697221,
+    "place_id": "ChIJSwPaUTq3yhQRjGmCY3-VmaQ"
+  },
+  {
+    "name": "CEMRE OTOPARK",
+    "address": "Çağlayan, Vatan Caddesi 72a",
+    "district": "Şişli",
+    "latitude": 41.07605540000001,
+    "longitude": 28.9814807,
+    "place_id": "ChIJ4euhbea2yhQRWcyJB4hwsPE"
+  },
+  {
+    "name": "KAĞITHANE BELEDİYESİ",
+    "address": "Telsizler, Benek Sokak No:4",
+    "district": "Şişli",
+    "latitude": 41.07853,
+    "longitude": 28.996574,
+    "place_id": "ChIJlZKlyvW2yhQRZlJla9SVOUE"
+  },
+  {
+    "name": "DLN MOTOR TURİZM OTOM .SAN.VE TİC.LTD.STİ",
+    "address": "Ortabayır, Hakim Sokak 5/A",
+    "district": "Şişli",
+    "latitude": 41.0782973,
+    "longitude": 29.0006902,
+    "place_id": "ChIJ1caMc1-2yhQR1oqfxGzR_3Q"
+  },
+  {
+    "name": "Namahrem Sk. Otoparkı",
+    "address": "Demirtaş, Namahrem Sokak No:27",
+    "district": "Taksim",
+    "latitude": 41.01862999999999,
+    "longitude": 28.96278010000001,
+    "place_id": "ChIJtzT16_K5yhQR2QGOmVGeNF0"
+  },
+  {
+    "name": "Ispark",
+    "address": "Arap Cami, Dikişçi Sokak No:93",
+    "district": "Taksim",
+    "latitude": 41.02223,
+    "longitude": 28.9742477,
+    "place_id": "ChIJYzcWaOi5yhQRt07nwE0HffI"
+  },
+  {
+    "name": "Murat Efendi Sk. Otoparkı",
+    "address": "Demirtaş, Murat Efendi Sokak No:20",
+    "district": "Taksim",
+    "latitude": 41.019055,
+    "longitude": 28.9641532,
+    "place_id": "ChIJ0ZzKgPK5yhQRIlKx60ydPyg"
+  },
+  {
+    "name": "İSPARK Özel Okçular Tekkesi Otoparkı",
+    "address": "Keçeci Piri, Geceler Sokak No:1",
+    "district": "Taksim",
+    "latitude": 41.0427553,
+    "longitude": 28.95942009999999,
+    "place_id": "ChIJVcdXb1G3yhQRZRFs2LFQJtU"
+  },
+  {
+    "name": "Ispark",
+    "address": "Hobyar, Yalı Köşkü Caddesi No:24",
+    "district": "Taksim",
+    "latitude": 41.0162308,
+    "longitude": 28.9747255,
+    "place_id": "ChIJ05U8_uq5yhQRUt8m3SqmZ8U"
+  },
+  {
+    "name": "Kasnakçılar Sk. Otoparkı",
+    "address": "Hoca Gıyasettin, Kasnakçılar Sokak 19a",
+    "district": "Taksim",
+    "latitude": 41.01888,
+    "longitude": 28.96215009999999,
+    "place_id": "ChIJWZ7K5fK5yhQRZ03b1QCnDM0"
+  },
+  {
+    "name": "Şirin Katlı Otopark",
+    "address": "Süleymaniye, Ordinaryüs Profesör Doktor Cemil Birsel Caddesi No:28",
+    "district": "Taksim",
+    "latitude": 41.016148,
+    "longitude": 28.96715409999999,
+    "place_id": "ChIJRZGhK-25yhQRbg0fdt5hlDE"
+  },
+  {
+    "name": "Yıldız Çiçeği Sk. Otoparkı",
+    "address": "Etiler, Yıldızçiçeği Sokağı No:7",
+    "district": "Levent",
+    "latitude": 41.07968999999999,
+    "longitude": 29.03103,
+    "place_id": "ChIJ66FvqRG2yhQR9lWXe_ePynw"
+  },
+  {
+    "name": "Mayadrom Akatlar Parking",
+    "address": "Akat, Yıldırım Oğuz Göker Sokak No:2",
+    "district": "Levent",
+    "latitude": 41.087183,
+    "longitude": 29.0223281,
+    "place_id": "ChIJtXCMMXO2yhQRYkykgna5Sn8"
+  },
+  {
+    "name": "Levent Metro Otopark İspark",
+    "address": "Esentepe, Büyükdere Caddesi",
+    "district": "Levent",
+    "latitude": 41.0814627,
+    "longitude": 29.0104726,
+    "place_id": "ChIJcysTI2a2yhQRw8wASkxJQ00"
+  },
+  {
+    "name": "İspark Eski İett Garajı 2",
+    "address": "Emniyetevleri Mahallesi, Eski Büyükdere Caddesi 217-1, Şirintepe - Kağıthane/Şişli",
+    "district": "Levent",
+    "latitude": 41.083421,
+    "longitude": 29.0081686,
+    "place_id": "ChIJtXHif2a2yhQR0ciAjLu1f7A"
+  },
+  {
+    "name": "İspark",
+    "address": "Esentepe, İETT 4. Levent Otobüs Garajı",
+    "district": "Levent",
+    "latitude": 41.0839672,
+    "longitude": 29.00554000000001,
+    "place_id": "ChIJ84YVAGS2yhQRDVLWxEJ4XVo"
+  },
+  {
+    "name": "İspark",
+    "address": "Levent, Büyükdere Caddesi, Beşiktaş",
+    "district": "Levent",
+    "latitude": 41.0774344,
+    "longitude": 29.0141518,
+    "place_id": "ChIJA1CDf0K2yhQR9uNx0bWU0Io"
+  },
+  {
+    "name": "İspark",
+    "address": "Esentepe, Büyükdere Caddesi Metro City AVM, Beşiktaş",
+    "district": "Levent",
+    "latitude": 41.07646349999999,
+    "longitude": 29.0138891,
+    "place_id": "ChIJIbjUiUK2yhQRwoqq1ZIiNk4"
+  },
+  {
+    "name": "Gökhan Çamoğlu",
+    "address": "Sultan Selim Mahallesi, Levent, Behçet Sokak No:4 K:3 4",
+    "district": "Levent",
+    "latitude": 41.08982049999999,
+    "longitude": 29.0049494,
+    "place_id": "ChIJx7bBrSa2yhQRZuKpxj0ifBY"
+  },
+  {
+    "name": "Clubsporium Otopark",
+    "address": "Akat, Beyefendi Sokağı No:37",
+    "district": "Levent",
+    "latitude": 41.0872604,
+    "longitude": 29.0241093,
+    "place_id": "ChIJPWRz6wy2yhQRx3plt3wwN1U"
+  },
+  {
+    "name": "Tatlici Kuleleri Otopark İspark",
+    "address": "Esentepe, Barbaros Bulvarı No:169",
+    "district": "Levent",
+    "latitude": 41.0690187,
+    "longitude": 29.0143028,
+    "place_id": "ChIJbVNFn0W2yhQRXalylgHQ7Q8"
+  },
+  {
+    "name": "Y.E. Emniyet Otoparkı",
+    "address": "Kültür, Venüs Sokaği No:3",
+    "district": "Levent",
+    "latitude": 41.0725414,
+    "longitude": 29.0294656,
+    "place_id": "ChIJY-er8T22yhQR7kH0l8Y2tLI"
+  },
+  {
+    "name": "Nova Suites Eyup Sales Office",
+    "address": "Yeşilce, Taşcı Caddesi No 72",
+    "district": "Levent",
+    "latitude": 41.0944152,
+    "longitude": 28.9957058,
+    "place_id": "ChIJE1St24e2yhQRG0W696RpuAo"
+  },
+  {
+    "name": "Akgun Otopark",
+    "address": "Etiler, Yanarsu Sokak No:9",
+    "district": "Levent",
+    "latitude": 41.08357900000001,
+    "longitude": 29.035686,
+    "place_id": "ChIJeRBcAAa2yhQRZrXmG5jC0oA"
+  },
+  {
+    "name": "Garaj Boğaziçi",
+    "address": "Uçaksavar Kültür Ve Spor Merkezi Otopark Binası, Etiler Mah Cengiz Topel Cad, Boğaziçi Üniversitesi No:2",
+    "district": "Levent",
+    "latitude": 41.0852983,
+    "longitude": 29.0394024,
+    "place_id": "ChIJyQpxuAa2yhQRoA_zhFJJO-Q"
+  },
+  {
+    "name": "İspark",
+    "address": "Atatürk, Turgut Özal Bulvarı, Ataşehir",
+    "district": "Ataşehir",
+    "latitude": 40.9930469,
+    "longitude": 29.12764069999999,
+    "place_id": "ChIJrcZ8najIyhQRmyY4Jcx9JI0"
+  },
+  {
+    "name": "Ataşehir Belediyesi Bülent Ecevit Parkı",
+    "address": "Barbaros, Halk Caddesi",
+    "district": "Ataşehir",
+    "latitude": 40.9876499,
+    "longitude": 29.1012426,
+    "place_id": "ChIJvTbSzDHGyhQRiLmVmi4eyxQ"
+  },
+  {
+    "name": "İSPARK İçerenköy Sebze Meyve Hali Otoparkı",
+    "address": "İçerenköy, Hal Yolu Caddesi 26-3",
+    "district": "Ataşehir",
+    "latitude": 40.977348,
+    "longitude": 29.1038339,
+    "place_id": "ChIJf-pmC0jGyhQRimYmEvKk1TQ"
+  },
+  {
+    "name": "Ispark",
+    "address": "Sahrayı Cedit, Halk Sokak No:52",
+    "district": "Ataşehir",
+    "latitude": 40.98263099999999,
+    "longitude": 29.093111,
+    "place_id": "ChIJXaCCSTXGyhQRMOyPEjg6Bek"
+  },
+  {
+    "name": "Mozaik Çarşı İş Merkez",
+    "address": "Atatürk, Meriç Caddesi 21 G",
+    "district": "Ataşehir",
+    "latitude": 40.9891912,
+    "longitude": 29.1354361,
+    "place_id": "ChIJt4MVRarIyhQRThiCDwK6TCY"
+  },
+  {
+    "name": "38.Ada Otoparki",
+    "address": "Türkiye",
+    "district": "Ataşehir",
+    "latitude": 40.992782,
+    "longitude": 29.1239626,
+    "place_id": "ChIJE783bafIyhQRhbSsClLUZ9Q"
+  },
+  {
+    "name": "Açık Otopark",
+    "address": "Türkiye",
+    "district": "Ataşehir",
+    "latitude": 40.990866,
+    "longitude": 29.125719,
+    "place_id": "ChIJodPDYR3GyhQRet978R37Fhk"
+  },
+  {
+    "name": "36 Ada Otopark",
+    "address": "Atatürk, Ataşehir Bulvarı No:2",
+    "district": "Ataşehir",
+    "latitude": 40.992135,
+    "longitude": 29.1171425,
+    "place_id": "ChIJk-eukh_GyhQRV_FaSQPySPw"
+  },
+  {
+    "name": "Eliss Clean&Car",
+    "address": "Küçükbakkalköy, Şerifali Caddesi No:62-64",
+    "district": "Ataşehir",
+    "latitude": 40.9833767,
+    "longitude": 29.1218257,
+    "place_id": "ChIJgadqVLHHyhQRX1S6DjFOn1Y"
+  },
+  {
+    "name": "Gühertaş Oto Yıkama & Oto Kuaför & Halı Yıkama",
+    "address": "Küçükbakkalköy, Şerifali Caddesi No:35",
+    "district": "Ataşehir",
+    "latitude": 40.9833944,
+    "longitude": 29.11911049999999,
+    "place_id": "ChIJGbR7fRfGyhQRj6bMxdAx5X0"
+  },
+  {
+    "name": "Oto34oto Yıkama Otopark",
+    "address": "Küçükbakkalköy, Kocasinan Caddesi No:41",
+    "district": "Ataşehir",
+    "latitude": 40.9825813,
+    "longitude": 29.1257404,
+    "place_id": "ChIJO5itGhDGyhQRx_CyG6bfx-8"
+  },
+  {
+    "name": "Mimar Sinan Camii",
+    "address": "Barbaros, Fesleğen Sokak No:2415",
+    "district": "Ataşehir",
+    "latitude": 40.9957638,
+    "longitude": 29.1122045,
+    "place_id": "ChIJvWnwN57IyhQRKgwN_1WnzwM"
+  },
+  {
+    "name": "ATAŞEHİR MİMAR SİNAN OTOPARK OTO YIKAMA",
+    "address": "Barbaros, Ak Zambak Sokağı NO: 2/1",
+    "district": "Ataşehir",
+    "latitude": 40.9963788,
+    "longitude": 29.1117257,
+    "place_id": "ChIJrXU-oLPJyhQRx32HsXeQuk4"
+  },
+  {
+    "name": "Brandium AVM Otopark Girişi",
+    "address": "Küçükbakkalköy",
+    "district": "Ataşehir",
+    "latitude": 40.9834575,
+    "longitude": 29.1330569,
+    "place_id": "ChIJz8duAwTGyhQRNDxBdu_BXgA"
+  },
+  {
+    "name": "DERİNSU YEDİEMİN OTOPARK",
+    "address": "Tatlısu Mh. Şahin Cd, Şerifali, Şekip Sokak No:1",
+    "district": "Ataşehir",
+    "latitude": 41.0031845,
+    "longitude": 29.1327212,
+    "place_id": "ChIJixD24a_JyhQR6uXQHKrPT4Q"
+  },
+  {
+    "name": "Derinsu yeddieminlik ve otopark",
+    "address": "tatlısu mahallesi, Şerifali, Şahin Caddesi no:46",
+    "district": "Ataşehir",
+    "latitude": 41.0035514,
+    "longitude": 29.1331068,
+    "place_id": "ChIJ39V64UPJyhQRKyG28gZ1lh8"
+  },
+  {
+    "name": "Turan Yediemin Otoparkı",
+    "address": "Tatlısu, Şekip Sokak No:2",
+    "district": "Ataşehir",
+    "latitude": 41.0035575,
+    "longitude": 29.1332028,
+    "place_id": "ChIJYxshosDJyhQRZMNhL9mUyNE"
+  },
+  {
+    "name": "Otopark",
+    "address": "Şerifali, Kızkalesi Sokak No:1",
+    "district": "Ataşehir",
+    "latitude": 40.997583,
+    "longitude": 29.140439,
+    "place_id": "ChIJCSfhPU3PyhQRUbRoBqIwNuI"
+  },
+  {
+    "name": "Fresh Car Wash & Wax",
+    "address": "Barbaros, Ardıç Sokak No:7 A D:1",
+    "district": "Ataşehir",
+    "latitude": 40.9952802,
+    "longitude": 29.1065261,
+    "place_id": "ChIJeziqroLIyhQRPgUcchlE0bc"
+  },
+  {
+    "name": "İdeal Hipermarketleri Otopark",
+    "address": "Tatlısu, Elalmış Caddesi",
+    "district": "Ataşehir",
+    "latitude": 41.0049948,
+    "longitude": 29.1321563,
+    "place_id": "ChIJHb8NjLbIyhQRWTtiMGUQiws"
+  },
+  {
+    "name": "Hakan Park Vale",
+    "address": "Aziz Mahmut Hüdayi, Eski Mahkeme Sokak No:5",
+    "district": "Üsküdar",
+    "latitude": 41.023168,
+    "longitude": 29.0153116,
+    "place_id": "ChIJFezwoom3yhQR1mZBqITtJtI"
+  },
+  {
+    "name": "Detay Cafe Vale Otopark",
+    "address": "Aziz Mahmut Hüdayi, Gülfem Sokak No:19",
+    "district": "Üsküdar",
+    "latitude": 41.0234981,
+    "longitude": 29.0149511,
+    "place_id": "ChIJ946a67m3yhQRwdu-XMN1S7A"
+  },
+  {
+    "name": "İspark Mimar Sinan Zemin Altı Otoparkı",
+    "address": "Mimar Sinan, Otopark Sokak No:19",
+    "district": "Üsküdar",
+    "latitude": 41.0222114,
+    "longitude": 29.0169022,
+    "place_id": "ChIJg9DGSdq3yhQRbKSDDwE7Hco"
+  },
+  {
+    "name": "Balıbey Otopark & Yıkama",
+    "address": "Mimar Sinan, Açık Otopark No:6",
+    "district": "Üsküdar",
+    "latitude": 41.0248483,
+    "longitude": 29.0140537,
+    "place_id": "ChIJ1YYJHom3yhQRpfpGBoNhVxo"
+  },
+  {
+    "name": "Otopark",
+    "address": "Türkiye",
+    "district": "Üsküdar",
+    "latitude": 41.023839,
+    "longitude": 29.0181155,
+    "place_id": "ChIJu_4iwYu3yhQRFrm8cU-_IjQ"
+  },
+  {
+    "name": "ÜSKÜDAR MERKEZ KAT OTOPARKI",
+    "address": "Mimar Sinan, Karagazi Sokağı No:2",
+    "district": "Üsküdar",
+    "latitude": 41.024459,
+    "longitude": 29.01818999999999,
+    "place_id": "ChIJJeOpzLS3yhQRtfykYaHkwTo"
+  },
+  {
+    "name": "Vip Otopark Yıkama",
+    "address": "Mimar Sinan, Çavuşdere Caddesi No:5",
+    "district": "Üsküdar",
+    "latitude": 41.02181969999999,
+    "longitude": 29.01783510000001,
+    "place_id": "ChIJNQqbPYq3yhQRYiyYI1C9PRg"
+  },
+  {
+    "name": "Karadeniz Park Otopark",
+    "address": "Mimar Sinan, Selamiali Efendi Caddesi No:49",
+    "district": "Üsküdar",
+    "latitude": 41.0240977,
+    "longitude": 29.0191546,
+    "place_id": "ChIJLw5rmou3yhQRK3-h_wn1V3s"
+  },
+  {
+    "name": "Cleanmax Oto Park Oto Yıkama",
+    "address": "Mimar Sinan, Selamiali Efendi Caddesi",
+    "district": "Üsküdar",
+    "latitude": 41.0239,
+    "longitude": 29.0195649,
+    "place_id": "ChIJh3gGnIu3yhQR4l1-Ll5RYro"
+  },
+  {
+    "name": "Şükran Çiftliği Sk.otopark",
+    "address": "Zuhuratbaba, Şükran Çiftliği Sokak No:16",
+    "district": "Bakırköy",
+    "latitude": 40.9807856,
+    "longitude": 28.8692852,
+    "place_id": "ChIJ6UhRFK-8yhQRo9b3-LlfFZw"
+  },
+  {
+    "name": "Sahil Otopark",
+    "address": "Cevizlik, Sakızlı Yalı Sokak No:6 D:1B",
+    "district": "Bakırköy",
+    "latitude": 40.975321,
+    "longitude": 28.875754,
+    "place_id": "ChIJmaL7Rru8yhQRBKZl7l4FC5M"
+  },
+  {
+    "name": "SEVGİ TURİZM TAŞIMACILIK TİC.LTD.ŞTİ.",
+    "address": "Sümer",
+    "district": "Bakırköy",
+    "latitude": 40.991711,
+    "longitude": 28.8972608,
+    "place_id": "ChIJBa8VpnG7yhQR0nXCCwAr3OM"
+  },
+  {
+    "name": "İSPARK Bakırköy İDO İskelesi Önü",
+    "address": "Zeytinlik, Kennedy Caddesi",
+    "district": "Bakırköy",
+    "latitude": 40.9740025,
+    "longitude": 28.8759341,
+    "place_id": "ChIJD3wnCLu8yhQRZpXQSL_65Kg"
+  },
+  {
+    "name": "Çelik Trading",
+    "address": "Zeytinlik, Rauf Orbay Caddesi No:24, Bakırköy",
+    "district": "Bakırköy",
+    "latitude": 40.97256469999999,
+    "longitude": 28.87528489999999,
+    "place_id": "ChIJ0WrYxru8yhQRt5dgvafycl0"
+  },
+  {
+    "name": "Oto Kuaför-Cam Filmi Ziwbax",
+    "address": "Bahçelievler, Ressam Halim Sokak No:2/A",
+    "district": "Bakırköy",
+    "latitude": 40.9967124,
+    "longitude": 28.8652839,
+    "place_id": "ChIJS76K9lG7yhQRJcsSu7t7oVk"
+  },
+  {
+    "name": "Kasım Sk. Otoparkı",
+    "address": "Mehmet Nesih Özmen, Kasım Sokağı No:2",
+    "district": "Bakırköy",
+    "latitude": 41.0081462,
+    "longitude": 28.8822731,
+    "place_id": "ChIJXxTilD27yhQRfZtFBH7Dm_M"
+  },
+  {
+    "name": "Güven oto yıkama&otopark",
+    "address": "Kartaltepe, Parkönü Caddesi no:6",
+    "district": "Bakırköy",
+    "latitude": 40.9820317,
+    "longitude": 28.878432,
+    "place_id": "ChIJOU02dl-9yhQRH6LYDB17E9s"
+  },
+  {
+    "name": "İspark bakırköy",
+    "address": "Kartaltepe, Terakki Caddesi",
+    "district": "Bakırköy",
+    "latitude": 40.9835903,
+    "longitude": 28.8760012,
+    "place_id": "ChIJZUF_GKe8yhQRT3TvxoOPIY4"
+  },
+  {
+    "name": "Bemay Katlı Otopark",
+    "address": "Yenimahalle, Yanık Ses Sokak No:2",
+    "district": "Bakırköy",
+    "latitude": 40.980387,
+    "longitude": 28.879185,
+    "place_id": "ChIJdU6bb6G8yhQRwhoAgSdJkIQ"
+  },
+  {
+    "name": "Katlı Otopark",
+    "address": "Yenimahalle",
+    "district": "Bakırköy",
+    "latitude": 40.9806015,
+    "longitude": 28.8807422,
+    "place_id": "ChIJTaF3Rsu9yhQR_9OfT4_b90k"
+  },
+  {
+    "name": "Palmiye Oto park",
+    "address": "European Side",
+    "district": "Bakırköy",
+    "latitude": 40.9783676,
+    "longitude": 28.8768816,
+    "place_id": "ChIJfekG52S9yhQRfhRPIqLROqA"
+  },
+  {
+    "name": "Garaj İstanbul Otopark",
+    "address": "ANADOLU LİSESİ YANI, Yenimahalle, İstanbul Caddesi No:91",
+    "district": "Bakırköy",
+    "latitude": 40.97883489999999,
+    "longitude": 28.88005979999999,
+    "place_id": "ChIJZdraVem9yhQRcCILbnsnmZo"
+  },
+  {
+    "name": "Fors açık otopark",
+    "address": "Cevizlik, Kırmızı Şebboy Sokağı no:3",
+    "district": "Bakırköy",
+    "latitude": 40.97807099999999,
+    "longitude": 28.87726,
+    "place_id": "ChIJ5agA7v-9yhQRh466tsOMaqo"
+  },
+  {
+    "name": "Palmiye Otopark2",
+    "address": "Cevizlik, İskele Caddesi No:2",
+    "district": "Bakırköy",
+    "latitude": 40.978083,
+    "longitude": 28.8775976,
+    "place_id": "ChIJe0O5vzK9yhQR_cGJPq2cex8"
+  },
+  {
+    "name": "Otopark",
+    "address": "Kartaltepe",
+    "district": "Bakırköy",
+    "latitude": 40.9856817,
+    "longitude": 28.8758116,
+    "place_id": "ChIJtSemX6e8yhQRiVF9RrxUqX8"
+  },
+  {
+    "name": "Otopark Girişi",
+    "address": "Sakızağacı, Yurt Sahibi Sokak No:8",
+    "district": "Bakırköy",
+    "latitude": 40.9781871,
+    "longitude": 28.8795917,
+    "place_id": "ChIJZ7M2saO8yhQRB4sqlcUNbyE"
+  },
+  {
+    "name": "Pazar Sk. Otoparkı",
+    "address": "Yenimahalle, 10 Temmuz Caddesi No:36",
+    "district": "Bakırköy",
+    "latitude": 40.98141,
+    "longitude": 28.88294,
+    "place_id": "ChIJ7Q7mKaC8yhQRCcIFMl5tRVE"
+  },
+  {
+    "name": "Emir Otopark",
+    "address": "Sakızağacı, Havlucular Sokak No:2",
+    "district": "Bakırköy",
+    "latitude": 40.97872230000001,
+    "longitude": 28.8818174,
+    "place_id": "ChIJxUIXGaK8yhQRiAE33ngSGQY"
+  },
+  {
+    "name": "KAPAL OTOPARK ARAÇ YIKAMA",
+    "address": "Cevizlik, Sakızlı Bostan Sokağı No:23",
+    "district": "Bakırköy",
+    "latitude": 40.9770216,
+    "longitude": 28.8774219,
+    "place_id": "ChIJm6rUZKO8yhQRAynVQte6d94"
+  },
+  {
+    "name": "Uygar Sk. Otopark",
+    "address": "Molla Gürani, Uygar Sokağı No:18",
+    "district": "Fatih",
+    "latitude": 41.0134398,
+    "longitude": 28.9406581,
+    "place_id": "ChIJ9SyOZDG6yhQRTBLMmOD8tdI"
+  },
+  {
+    "name": "Keçeciler Cd. Otoparkı",
+    "address": "Hırka-i Şerif, Keçeciler Caddesi No:36",
+    "district": "Fatih",
+    "latitude": 41.02186,
+    "longitude": 28.9391602,
+    "place_id": "ChIJu7WTGj26yhQRAUQtH-NC5oM"
+  },
+  {
+    "name": "Karakoyunlu Sk. Otoparkı",
+    "address": "Molla Gürani, Akkoyunlu Sokak No:10",
+    "district": "Fatih",
+    "latitude": 41.01343,
+    "longitude": 28.9391699,
+    "place_id": "ChIJ8ZnoaDC6yhQRZ1y1Ij-E5gg"
+  },
+  {
+    "name": "Akkoyunlu Sk. Otoparkı",
+    "address": "Molla Gürani, Akkoyunlu Sokak No:8",
+    "district": "Fatih",
+    "latitude": 41.0135848,
+    "longitude": 28.9383415,
+    "place_id": "ChIJtRllXjC6yhQRcKaIKCP8iRs"
+  },
+  {
+    "name": "Sofular Otoparkı",
+    "address": "İskenderpaşa",
+    "district": "Fatih",
+    "latitude": 41.013337,
+    "longitude": 28.9480579,
+    "place_id": "ChIJsVsUbCa6yhQR9NOP7AL_aws"
+  },
+  {
+    "name": "Dadas Parking",
+    "address": "Kemal Paşa, Fevziye Caddesi No:12",
+    "district": "Fatih",
+    "latitude": 41.01223900000001,
+    "longitude": 28.9569211,
+    "place_id": "ChIJNSZwGYm5yhQRC_Pf7aOh2QE"
+  },
+  {
+    "name": "İSPARK",
+    "address": "Akşemsettin, Akdeniz Caddesi 55a",
+    "district": "Fatih",
+    "latitude": 41.0182664,
+    "longitude": 28.9450911,
+    "place_id": "ChIJNbQykSO6yhQR22MrgDA0lOo"
+  },
+  {
+    "name": "Çapa Yolüstü Otoparkı",
+    "address": "Topkapı, Turgut Özal Millet Caddesi No:148",
+    "district": "Fatih",
+    "latitude": 41.01670180000001,
+    "longitude": 28.9309908,
+    "place_id": "ChIJyxONHzi6yhQRpZPUdpkgr-A"
+  },
+  {
+    "name": "Empark Kepez parking",
+    "address": "Aksaray - Fatih, Molla Gürani, Adnan Menderes Bulvarı",
+    "district": "Fatih",
+    "latitude": 41.0127591,
+    "longitude": 28.9474244,
+    "place_id": "ChIJ28VI9SW6yhQRk19m0ru3Lvg"
+  },
+  {
+    "name": "İspark",
+    "address": "Hacıkadın Mahallesi, Haşim İşcan Geçidi İ.M.Ç D:2.Blok, Vefa-Fatih",
+    "district": "Fatih",
+    "latitude": 41.0175886,
+    "longitude": 28.9573383,
+    "place_id": "ChIJCW37DYu5yhQR9Z39yvcXliM"
+  },
+  {
+    "name": "İspark",
+    "address": "vefa, Kemal Paşa, Gençtürk Caddesi",
+    "district": "Fatih",
+    "latitude": 41.0123708,
+    "longitude": 28.9558784,
+    "place_id": "ChIJp3DyAIm5yhQRPHYsSM18dok"
+  },
+  {
+    "name": "İSPARK",
+    "address": "Kemal Paşa, Şehzadebaşı Caddesi, Vefa-Fatih",
+    "district": "Fatih",
+    "latitude": 41.0127916,
+    "longitude": 28.9576122,
+    "place_id": "ChIJQ594R4m5yhQRVVSOQthRCmA"
+  },
+  {
+    "name": "İs Park",
+    "address": "Hacı Kadın, Atatürk Bulvarı, Unkapanı, Fatih",
+    "district": "Fatih",
+    "latitude": 41.020181,
+    "longitude": 28.9594659,
+    "place_id": "ChIJo3R7efO5yhQRm9O2H0ifTTE"
+  },
+  {
+    "name": "İs Park",
+    "address": "Hacı Kadın, Külhan Sk., Vefa - fatih",
+    "district": "Fatih",
+    "latitude": 41.0200178,
+    "longitude": 28.9604717,
+    "place_id": "ChIJa8VqpPO5yhQRA9D7lDtC4ao"
+  },
+  {
+    "name": "İSPARK",
+    "address": "Katip Kasım, Hayriye Tüccarı Caddesi",
+    "district": "Fatih",
+    "latitude": 41.0064678,
+    "longitude": 28.9570444,
+    "place_id": "ChIJiZlJ-Ya5yhQRWySevwmEZc0"
+  },
+  {
+    "name": "Ispark Parking Lot",
+    "address": "No:, Mercan, Tacirhane Sokak No:12",
+    "district": "Fatih",
+    "latitude": 41.0135145,
+    "longitude": 28.9668894,
+    "place_id": "ChIJQT0PV5K5yhQRtK1F4NMLIEc"
+  },
+  {
+    "name": "İSPARK",
+    "address": "Yalı, Turgut Özal Bulvarı No:203",
+    "district": "Maltepe",
+    "latitude": 40.92641400000001,
+    "longitude": 29.12327820000001,
+    "place_id": "ChIJZ04GnrDGyhQRveYC7O54XSs"
+  },
+  {
+    "name": "İsbike Konser Alanı İstasyonu",
+    "address": "Türkiye",
+    "district": "Maltepe",
+    "latitude": 40.9193421,
+    "longitude": 29.1260597,
+    "place_id": "ChIJfSxAZ7LGyhQRsZxgZqtuOuU"
+  },
+  {
+    "name": "Mapark",
+    "address": "Cevizli, Bağdat Caddesi 460/2",
+    "district": "Maltepe",
+    "latitude": 40.9185163,
+    "longitude": 29.14137899999999,
+    "place_id": "ChIJDaqiNKTGyhQRl7x4aNWVQWs"
+  },
+  {
+    "name": "Park 61 (Yeddi - Emin Otoparkı & Çekici)",
+    "address": "Altayçeşme, Kışlalı Caddesi No 39/1",
+    "district": "Maltepe",
+    "latitude": 40.93334169999999,
+    "longitude": 29.13626919999999,
+    "place_id": "ChIJaZpI6K7HyhQRNUeA-TYQv_A"
+  },
+  {
+    "name": "Açık Otopark",
+    "address": "Girne, Çiçek Sokağı No:30",
+    "district": "Maltepe",
+    "latitude": 40.941193,
+    "longitude": 29.1370028,
+    "place_id": "ChIJuRZvNp3GyhQRKgCjg9HASq8"
+  },
+  {
+    "name": "Güçser Otopark Yıkama",
+    "address": "Altayçeşme, Geçiş Sokak",
+    "district": "Maltepe",
+    "latitude": 40.9278581,
+    "longitude": 29.1329536,
+    "place_id": "ChIJA2wfHKTGyhQRbjuuuEnpNhI"
+  },
+  {
+    "name": "Kamilkoc maltepe",
+    "address": "Bağlarbaşı, Atatürk Caddesi No:76",
+    "district": "Maltepe",
+    "latitude": 40.9275595,
+    "longitude": 29.1340493,
+    "place_id": "ChIJf36fLwnHyhQRLCLs_FdJfIE"
+  },
+  {
+    "name": "Bay titiz Oto Yıkama & Kuaför",
+    "address": "Bağlarbaşı, Yücelen Sokak no:24",
+    "district": "Maltepe",
+    "latitude": 40.9280407,
+    "longitude": 29.1378606,
+    "place_id": "ChIJvyoewlPHyhQR18bXqEjcbbs"
+  },
+  {
+    "name": "Güven Otopark",
+    "address": "Bağlarbaşı, Lisealtı Sokak",
+    "district": "Maltepe",
+    "latitude": 40.9269136,
+    "longitude": 29.13497930000001,
+    "place_id": "ChIJHSPi6KbGyhQRcELW2AO_cmg"
+  },
+  {
+    "name": "İSPARK Yayla Sanat Merkezi Açık Otoparkı",
+    "address": "Yalı, Turgut Özal Bulvarı No:1032",
+    "district": "Maltepe",
+    "latitude": 40.9275071,
+    "longitude": 29.1224924,
+    "place_id": "ChIJKbMpELrGyhQRYuEpSmnuZt8"
+  },
+  {
+    "name": "İSPARK Yayla Sanat Merkezi Otoparkı",
+    "address": "Yalı, Turgut Özal Bulvarı No:203",
+    "district": "Maltepe",
+    "latitude": 40.9261556,
+    "longitude": 29.1242003,
+    "place_id": "ChIJly47JhbHyhQRBU-SGDR24LU"
+  },
+  {
+    "name": "Maltepe Orhangazi Şehir Parkı Açık Otoparkı 1",
+    "address": "1028, Orhan Gazi Caddesi",
+    "district": "Maltepe",
+    "latitude": 40.930634,
+    "longitude": 29.1181281,
+    "place_id": "ChIJ_fyk-bjGyhQRYlkIoCToJJA"
+  },
+  {
+    "name": "Karpark",
+    "address": "Feyzullah, Bağdat Cd.& Havuzlar Sokağı Merkez Cami No:2, Maltepe",
+    "district": "Maltepe",
+    "latitude": 40.9246459,
+    "longitude": 29.1303228,
+    "place_id": "ChIJ132efq_GyhQRNcvdN3_dyUo"
+  },
+  {
+    "name": "AUTO WORLD DETAİLİNG",
+    "address": "Feyzullah, Serap Caddesi No:1",
+    "district": "Maltepe",
+    "latitude": 40.9251856,
+    "longitude": 29.1260931,
+    "place_id": "ChIJORLjIo_HyhQRJ7sbHPtzZ2w"
+  },
+  {
+    "name": "Prof Auto Detailing - MALTEPE OTO KUAFÖR PASTA CİLA SERAMİK KAPLAMA CAM FİLMİ (7/24 OTOPARK HİZMETİMİZ MEVCUTTUR)",
+    "address": "Feyzullah, Serap Caddesi No:1",
+    "district": "Maltepe",
+    "latitude": 40.9251856,
+    "longitude": 29.1260931,
+    "place_id": "ChIJCXi8cmrHyhQR-YPDi9mkiNg"
+  },
+  {
+    "name": "Hüdhüd Dersaadet",
+    "address": "Bağlarbaşı, Sakızağacı Sokak",
+    "district": "Maltepe",
+    "latitude": 40.9244522,
+    "longitude": 29.1318861,
+    "place_id": "ChIJe6fTb7zHyhQRwVdSvZ-QmCs"
+  },
+  {
+    "name": "Parking auto YIKAMA & KUAFÖR",
+    "address": "İdealtepe, Coşkun Sokak",
+    "district": "Maltepe",
+    "latitude": 40.943602,
+    "longitude": 29.1192404,
+    "place_id": "ChIJywZ1r5PGyhQRDCYI01Q1Muc"
+  },
+  {
+    "name": "İdealtepe Açık 1",
+    "address": "İdealtepe, Turgut Özal Bulvarı No:123",
+    "district": "Maltepe",
+    "latitude": 40.9365044,
+    "longitude": 29.11480199999999,
+    "place_id": "ChIJty0I1sHGyhQRafIJF8NIAz0"
+  },
+  {
+    "name": "Pelix Armor",
+    "address": "İdealtepe, Kartopu Sokak No:12/A",
+    "district": "Maltepe",
+    "latitude": 40.94143589999999,
+    "longitude": 29.11657829999999,
+    "place_id": "ChIJZw5MnnnHyhQRhx3raid5Ok4"
+  },
+  {
+    "name": "SAMET KAPALI OTOPARK+YIKAMA",
+    "address": "Bağlarbaşı, Mor Lale Sokak No:42",
+    "district": "Maltepe",
+    "latitude": 40.92369759999999,
+    "longitude": 29.1326316,
+    "place_id": "ChIJu4jPWq_GyhQRLC028_ZahpU"
+  }
+]

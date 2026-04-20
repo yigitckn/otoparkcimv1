@@ -2,16 +2,20 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Plus, Upload, Search, MapPin, Check, X, Trash2 } from 'lucide-react'
+import { Plus, Upload, Search, Check, X, Trash2, Edit } from 'lucide-react'
 
 interface Parking {
   id: string
   name: string
   address: string
   district: string
+  latitude: number
+  longitude: number
   is_claimed: boolean
   owner_id: string | null
   status: string
+  capacity: number
+  hourly_price: number
   created_at: string
 }
 
@@ -22,6 +26,7 @@ export default function AdminParkingsPage() {
   const [filter, setFilter] = useState<'all' | 'claimed' | 'unclaimed'>('all')
   const [showAddModal, setShowAddModal] = useState(false)
   const [showBulkModal, setShowBulkModal] = useState(false)
+  const [editingParking, setEditingParking] = useState<Parking | null>(null)
 
   const supabase = createClient()
 
@@ -97,7 +102,6 @@ export default function AdminParkingsPage() {
         </div>
       </div>
 
-      {/* Filtreler */}
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
@@ -117,7 +121,7 @@ export default function AdminParkingsPage() {
           ].map((f) => (
             <button
               key={f.key}
-              onClick={() => setFilter(f.key as any)}
+              onClick={() => setFilter(f.key as 'all' | 'claimed' | 'unclaimed')}
               className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
                 filter === f.key
                   ? 'bg-cyan-500 text-white'
@@ -130,7 +134,6 @@ export default function AdminParkingsPage() {
         </div>
       </div>
 
-      {/* Otopark Listesi */}
       <div className="bg-slate-800/50 rounded-2xl border border-slate-700/50 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -178,12 +181,20 @@ export default function AdminParkingsPage() {
                     )}
                   </td>
                   <td className="p-4 text-right">
-                    <button
-                      onClick={() => deleteParking(parking.id)}
-                      className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        onClick={() => setEditingParking(parking)}
+                        className="p-2 text-cyan-400 hover:bg-cyan-500/20 rounded-lg transition-colors"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => deleteParking(parking.id)}
+                        className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -198,7 +209,6 @@ export default function AdminParkingsPage() {
         )}
       </div>
 
-      {/* Tek Otopark Ekleme Modal */}
       {showAddModal && (
         <AddParkingModal
           onClose={() => setShowAddModal(false)}
@@ -209,7 +219,6 @@ export default function AdminParkingsPage() {
         />
       )}
 
-      {/* Toplu Yükleme Modal */}
       {showBulkModal && (
         <BulkUploadModal
           onClose={() => setShowBulkModal(false)}
@@ -219,11 +228,21 @@ export default function AdminParkingsPage() {
           }}
         />
       )}
+
+      {editingParking && (
+        <EditParkingModal
+          parking={editingParking}
+          onClose={() => setEditingParking(null)}
+          onSuccess={() => {
+            setEditingParking(null)
+            loadParkings()
+          }}
+        />
+      )}
     </div>
   )
 }
 
-// Tek Otopark Ekleme Modal
 function AddParkingModal({ onClose, onSuccess }: { onClose: () => void, onSuccess: () => void }) {
   const [name, setName] = useState('')
   const [address, setAddress] = useState('')
@@ -369,7 +388,6 @@ function AddParkingModal({ onClose, onSuccess }: { onClose: () => void, onSucces
   )
 }
 
-// Toplu Yükleme Modal
 function BulkUploadModal({ onClose, onSuccess }: { onClose: () => void, onSuccess: () => void }) {
   const [csvData, setCsvData] = useState('')
   const [loading, setLoading] = useState(false)
@@ -466,8 +484,7 @@ function BulkUploadModal({ onClose, onSuccess }: { onClose: () => void, onSucces
               className="w-full h-64 px-4 py-3 bg-slate-900 border border-slate-600 rounded-xl text-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
               placeholder={`isim,adres,ilçe,enlem,boylam
 İSPARK Taksim,Taksim Meydanı,Beyoğlu,41.0370,28.9850
-İSPARK Kadıköy,Kadıköy İskelesi,Kadıköy,40.9912,29.0228
-Kanyon AVM Otopark,Büyükdere Cad.,Levent,41.0789,29.0123`}
+İSPARK Kadıköy,Kadıköy İskelesi,Kadıköy,40.9912,29.0228`}
             />
           </div>
 
@@ -498,6 +515,157 @@ Kanyon AVM Otopark,Büyükdere Cad.,Levent,41.0789,29.0123`}
             </button>
           </div>
         </div>
+      </div>
+    </div>
+  )
+}
+
+function EditParkingModal({ parking, onClose, onSuccess }: { parking: Parking, onClose: () => void, onSuccess: () => void }) {
+  const [name, setName] = useState(parking.name)
+  const [address, setAddress] = useState(parking.address || '')
+  const [district, setDistrict] = useState(parking.district || '')
+  const [latitude, setLatitude] = useState(parking.latitude?.toString() || '')
+  const [longitude, setLongitude] = useState(parking.longitude?.toString() || '')
+  const [capacity, setCapacity] = useState(parking.capacity?.toString() || '0')
+  const [hourlyPrice, setHourlyPrice] = useState(parking.hourly_price?.toString() || '0')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  const supabase = createClient()
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+
+    const { error: updateError } = await supabase
+      .from('parkings')
+      .update({
+        name,
+        address,
+        district,
+        latitude: parseFloat(latitude),
+        longitude: parseFloat(longitude),
+        capacity: parseInt(capacity),
+        hourly_price: parseFloat(hourlyPrice)
+      })
+      .eq('id', parking.id)
+
+    if (updateError) {
+      setError('Güncellenemedi: ' + updateError.message)
+      setLoading(false)
+      return
+    }
+
+    onSuccess()
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-slate-800 rounded-2xl w-full max-w-md p-6 border border-slate-700 max-h-[90vh] overflow-y-auto">
+        <h2 className="text-xl font-bold text-white mb-4">Otopark Düzenle</h2>
+        
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
+              {error}
+            </div>
+          )}
+
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">Otopark Adı</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">Adres</label>
+            <input
+              type="text"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              className="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">İlçe</label>
+            <input
+              type="text"
+              value={district}
+              onChange={(e) => setDistrict(e.target.value)}
+              className="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              required
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">Enlem</label>
+              <input
+                type="text"
+                value={latitude}
+                onChange={(e) => setLatitude(e.target.value)}
+                className="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">Boylam</label>
+              <input
+                type="text"
+                value={longitude}
+                onChange={(e) => setLongitude(e.target.value)}
+                className="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">Kapasite</label>
+              <input
+                type="number"
+                value={capacity}
+                onChange={(e) => setCapacity(e.target.value)}
+                className="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">Saatlik Ücret (₺)</label>
+              <input
+                type="number"
+                value={hourlyPrice}
+                onChange={(e) => setHourlyPrice(e.target.value)}
+                className="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              />
+            </div>
+          </div>
+
+          <div className="flex gap-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 py-3 bg-slate-700 text-white rounded-xl font-medium hover:bg-slate-600 transition-colors"
+            >
+              İptal
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex-1 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-xl font-medium hover:from-cyan-600 hover:to-blue-600 disabled:opacity-50 transition-colors"
+            >
+              {loading ? 'Kaydediliyor...' : 'Kaydet'}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   )
