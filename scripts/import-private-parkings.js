@@ -1,6 +1,6 @@
 require('dotenv').config({ path: '.env.local' })
+const fs = require('fs')
 const { createClient } = require('@supabase/supabase-js')
-const parkings = require('./parkings.json')
 
 const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -21,40 +21,32 @@ function createSlug(name) {
 }
 
 async function importParkings() {
-    const privateParkings = parkings.filter(p =>
-        !p.name.toLowerCase().includes('ispark') &&
-        !p.name.toLowerCase().includes('İspark')
-    )
-
-    console.log('Eklenecek:', privateParkings.length, 'otopark')
+    const csv = fs.readFileSync('scripts/parkings_cleaned.csv', 'utf-8')
+    const lines = csv.trim().split('\n')
 
     let added = 0
-    let skipped = 0
+    let failed = 0
 
-    for (const p of privateParkings) {
-        const { data: existing } = await supabase
-            .from('parkings')
-            .select('id')
-            .eq('latitude', p.latitude)
-            .eq('longitude', p.longitude)
-            .single()
+    for (let i = 1; i < lines.length; i++) {
+        const parts = lines[i].split(',')
+        if (parts.length < 5) continue
 
-        if (existing) {
-            skipped++
-            continue
-        }
+        const name = parts[0]
+        const address = parts[1]
+        const district = parts[2]
+        const latitude = parseFloat(parts[3])
+        const longitude = parseFloat(parts[4])
 
-        const slug = createSlug(p.name) + '-' + Date.now()
+        const slug = createSlug(name) + '-' + Date.now() + '-' + i
 
         const { error } = await supabase.from('parkings').insert({
-            name: p.name,
-            slug: slug,
-            address: p.address || '',
-            district: p.district,
-            latitude: p.latitude,
-            longitude: p.longitude,
-            source: 'google',
-            external_id: p.place_id,
+            name,
+            slug,
+            address,
+            district,
+            latitude,
+            longitude,
+            source: 'manual',
             is_active: true,
             is_claimed: false,
             capacity: 0,
@@ -69,15 +61,17 @@ async function importParkings() {
         })
 
         if (error) {
-            console.log('Hata:', p.name, error.message)
+            console.log('Hata:', name, error.message)
+            failed++
         } else {
+            console.log('Eklendi:', name)
             added++
         }
     }
 
     console.log('\n--- SONUÇ ---')
     console.log('Eklenen:', added)
-    console.log('Atlanan (zaten var):', skipped)
+    console.log('Başarısız:', failed)
 }
 
 importParkings()

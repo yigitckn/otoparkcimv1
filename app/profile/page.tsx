@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, User, Mail, Phone, Calendar, Car, Clock, CheckCircle, XCircle, LogOut, Star } from 'lucide-react'
+import { ArrowLeft, User, Mail, Phone, Calendar, Car, Clock, LogOut, Star } from 'lucide-react'
 
 interface Profile {
   id: string
@@ -15,38 +15,43 @@ interface Profile {
   created_at: string
 }
 
-interface Reservation {
+interface UserPoints {
+  total_points: number
+  total_checkins: number
+  approved_checkins: number
+  free_parks_earned: number
+  free_parks_used: number
+}
+
+interface Checkin {
   id: string
-  status: string
-  created_at: string
-  expires_at: string
   parking_id: string
-  parking: {
-    id: string
+  photo_url: string
+  status: string
+  points_awarded: number
+  created_at: string
+  parking?: {
     name: string
     address: string
-    hourly_price: number
   }
   review?: {
     rating: number
-    was_spot_available: boolean
   }
 }
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<Profile | null>(null)
-  const [reservations, setReservations] = useState<Reservation[]>([])
+  const [userPoints, setUserPoints] = useState<UserPoints | null>(null)
+  const [checkins, setCheckins] = useState<Checkin[]>([])
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState(false)
   const [fullName, setFullName] = useState('')
   const [phone, setPhone] = useState('')
   const [saving, setSaving] = useState(false)
-  const [ratingReservationId, setRatingReservationId] = useState<string | null>(null)
+  const [ratingCheckinId, setRatingCheckinId] = useState<string | null>(null)
   const [selectedRating, setSelectedRating] = useState(0)
   const [hoverRating, setHoverRating] = useState(0)
   const [submittingRating, setSubmittingRating] = useState(false)
-  const [wasSpotAvailable, setWasSpotAvailable] = useState<boolean | null>(null)
-  const [ratingStep, setRatingStep] = useState(1)
 
   const router = useRouter()
   const supabase = createClient()
@@ -75,25 +80,44 @@ export default function ProfilePage() {
       setPhone(profileData.phone || '')
     }
 
-    const { data: reservationsData } = await supabase
-      .from('reservations')
-      .select('*, parking:parkings(id, name, address, hourly_price)')
+    // Puanları yükle
+    const { data: pointsData } = await supabase
+      .from('user_points')
+      .select('*')
+      .eq('user_id', user.id)
+      .single()
+
+    if (pointsData) {
+      setUserPoints(pointsData)
+    }
+
+    // Park geçmişini yükle
+    const { data: checkinsData } = await supabase
+      .from('park_checkins')
+      .select('*')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .limit(10)
 
-    if (reservationsData) {
-      const reservationsWithReviews = await Promise.all(
-        reservationsData.map(async (res) => {
+    if (checkinsData) {
+      const enrichedCheckins = await Promise.all(
+        checkinsData.map(async (checkin) => {
+          const { data: parking } = await supabase
+            .from('parkings')
+            .select('name, address')
+            .eq('id', checkin.parking_id)
+            .single()
+          
           const { data: review } = await supabase
             .from('reviews')
-            .select('rating, was_spot_available')
-            .eq('reservation_id', res.id)
+            .select('rating')
+            .eq('checkin_id', checkin.id)
             .single()
-          return { ...res, review }
+
+          return { ...checkin, parking, review }
         })
       )
-      setReservations(reservationsWithReviews)
+      setCheckins(enrichedCheckins)
     }
 
     setLoading(false)
@@ -120,8 +144,8 @@ export default function ProfilePage() {
     router.push('/')
   }
 
-  const handleRating = async (reservationId: string, parkingId: string) => {
-    if (!profile || selectedRating === 0 || wasSpotAvailable === null) return
+  const handleRating = async (checkinId: string, parkingId: string) => {
+    if (!profile || selectedRating === 0) return
     setSubmittingRating(true)
 
     const { error } = await supabase
@@ -129,52 +153,21 @@ export default function ProfilePage() {
       .insert({
         user_id: profile.id,
         parking_id: parkingId,
-        reservation_id: reservationId,
+        checkin_id: checkinId,
         rating: selectedRating,
-        was_spot_available: wasSpotAvailable,
+        was_spot_available: true
       })
 
     if (!error) {
-      setReservations(prev => prev.map(res => 
-        res.id === reservationId 
-          ? { ...res, review: { rating: selectedRating, was_spot_available: wasSpotAvailable } }
-          : res
+      setCheckins(prev => prev.map(c => 
+        c.id === checkinId 
+          ? { ...c, review: { rating: selectedRating } }
+          : c
       ))
-      setRatingReservationId(null)
+      setRatingCheckinId(null)
       setSelectedRating(0)
-      setWasSpotAvailable(null)
-      setRatingStep(1)
     }
     setSubmittingRating(false)
-  }
-
-  const startRating = (reservationId: string) => {
-    setRatingReservationId(reservationId)
-    setRatingStep(1)
-    setWasSpotAvailable(null)
-    setSelectedRating(0)
-  }
-
-  const cancelRating = () => {
-    setRatingReservationId(null)
-    setSelectedRating(0)
-    setWasSpotAvailable(null)
-    setRatingStep(1)
-  }
-
-  const getStatusColor = (status: string) => {
-    if (status === 'active') return 'bg-green-500/20 text-green-400'
-    if (status === 'completed') return 'bg-blue-500/20 text-blue-400'
-    if (status === 'cancelled') return 'bg-red-500/20 text-red-400'
-    return 'bg-yellow-500/20 text-yellow-400'
-  }
-
-  const getStatusText = (status: string) => {
-    if (status === 'active') return 'Aktif'
-    if (status === 'completed') return 'Tamamlandı'
-    if (status === 'cancelled') return 'İptal'
-    if (status === 'no_show') return 'Gelmedi'
-    return status
   }
 
   const formatDate = (dateStr: string) => {
@@ -220,6 +213,7 @@ export default function ProfilePage() {
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-8 space-y-6">
+        {/* Kişisel Bilgiler */}
         <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-semibold text-white flex items-center gap-2">
@@ -314,156 +308,168 @@ export default function ProfilePage() {
           </div>
         </div>
 
+        {/* Puan Kartı */}
+        <div className="bg-gradient-to-br from-cyan-500/20 to-blue-500/20 backdrop-blur-sm rounded-2xl p-6 border border-cyan-500/30">
+          <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <Star className="w-5 h-5 text-yellow-400" />
+            Puanlarım
+          </h2>
+          
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="bg-slate-900/50 rounded-xl p-4 text-center">
+              <p className="text-3xl font-bold text-cyan-400">{userPoints?.total_points || 0}</p>
+              <p className="text-xs text-slate-400 mt-1">Toplam Puan</p>
+            </div>
+            <div className="bg-slate-900/50 rounded-xl p-4 text-center">
+              <p className="text-3xl font-bold text-green-400">{userPoints?.approved_checkins || 0}</p>
+              <p className="text-xs text-slate-400 mt-1">Onaylı Park</p>
+            </div>
+            <div className="bg-slate-900/50 rounded-xl p-4 text-center">
+              <p className="text-3xl font-bold text-yellow-400">{userPoints?.free_parks_earned || 0}</p>
+              <p className="text-xs text-slate-400 mt-1">Kazanılan Ücretsiz</p>
+            </div>
+            <div className="bg-slate-900/50 rounded-xl p-4 text-center">
+              <p className="text-3xl font-bold text-purple-400">{userPoints?.free_parks_used || 0}</p>
+              <p className="text-xs text-slate-400 mt-1">Kullanılan</p>
+            </div>
+          </div>
+
+          <div className="mt-4 p-4 bg-slate-900/50 rounded-xl">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm text-slate-400">Sonraki ücretsiz park</span>
+              <span className="text-sm text-cyan-400 font-medium">
+                {userPoints ? `${userPoints.approved_checkins % 5}/5 park` : '0/5 park'}
+              </span>
+            </div>
+            <div className="w-full bg-slate-700 rounded-full h-2">
+              <div 
+                className="bg-gradient-to-r from-cyan-500 to-blue-500 h-2 rounded-full transition-all"
+                style={{ width: `${userPoints ? (userPoints.approved_checkins % 5) * 20 : 0}%` }}
+              />
+            </div>
+            <p className="text-xs text-slate-500 mt-2">
+              Her 5 onaylı park kaydında 1 ücretsiz park hakkı kazanırsın!
+            </p>
+          </div>
+        </div>
+
+        {/* Park Geçmişi */}
         <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50">
           <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-            <Car className="w-5 h-5 text-cyan-400" />
-            Rezervasyon Geçmişi
+            <Car className="w-5 h-5 text-green-400" />
+            Park Geçmişim
           </h2>
 
-          {reservations.length === 0 ? (
+          {checkins.length === 0 ? (
             <div className="text-center py-8">
-              <Clock className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-              <p className="text-slate-400">Henüz rezervasyon yapmadınız</p>
-              <Link
-                href="/dashboard"
-                className="inline-block mt-4 px-4 py-2 bg-cyan-500/20 text-cyan-400 rounded-xl text-sm font-medium hover:bg-cyan-500/30 transition-colors"
-              >
-                Otopark Bul
-              </Link>
+              <Car className="w-12 h-12 text-slate-600 mx-auto mb-3" />
+              <p className="text-slate-400">Henüz park kaydınız yok</p>
+              <p className="text-sm text-slate-500 mt-1">Bir otoparka park ettiğinizde "Park Ettim" butonuna basın</p>
             </div>
           ) : (
             <div className="space-y-3">
-              {reservations.map((res) => (
-                <div key={res.id} className="p-4 bg-slate-900/50 rounded-xl border border-slate-700/30">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className={'w-10 h-10 rounded-xl flex items-center justify-center ' + 
-                        (res.status === 'completed' ? 'bg-green-500/20' : res.status === 'cancelled' ? 'bg-red-500/20' : 'bg-blue-500/20')}>
-                        {res.status === 'completed' ? (
-                          <CheckCircle className="w-5 h-5 text-green-400" />
-                        ) : res.status === 'cancelled' ? (
-                          <XCircle className="w-5 h-5 text-red-400" />
-                        ) : (
-                          <Clock className="w-5 h-5 text-blue-400" />
+              {checkins.map((checkin) => (
+                <div key={checkin.id} className="p-4 bg-slate-900/50 rounded-xl border border-slate-700/30">
+                  <div className="flex gap-4">
+                    <img 
+                      src={checkin.photo_url} 
+                      alt="Park fotoğrafı" 
+                      className="w-16 h-16 object-cover rounded-lg"
+                    />
+                    <div className="flex-1">
+                      <p className="font-medium text-white">{checkin.parking?.name || 'Bilinmeyen Otopark'}</p>
+                      <p className="text-xs text-slate-400">{checkin.parking?.address}</p>
+                      <div className="flex items-center gap-3 mt-2">
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                          checkin.status === 'approved' ? 'bg-green-500/20 text-green-400' :
+                          checkin.status === 'rejected' ? 'bg-red-500/20 text-red-400' :
+                          'bg-yellow-500/20 text-yellow-400'
+                        }`}>
+                          {checkin.status === 'approved' ? '✓ Onaylandı' :
+                           checkin.status === 'rejected' ? '✗ Reddedildi' : '⏳ Bekliyor'}
+                        </span>
+                        {checkin.points_awarded > 0 && (
+                          <span className="text-xs text-cyan-400">+{checkin.points_awarded} puan</span>
                         )}
-                      </div>
-                      <div>
-                        <p className="font-medium text-white">{res.parking?.name}</p>
-                        <p className="text-xs text-slate-400">{formatDate(res.created_at)}</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <span className={'px-2 py-1 rounded-full text-xs font-medium ' + getStatusColor(res.status)}>
-                        {getStatusText(res.status)}
-                      </span>
-                      <p className="text-sm text-cyan-400 mt-1">{res.parking?.hourly_price} TL/saat</p>
+                      <p className="text-xs text-slate-400">
+                        {new Date(checkin.created_at).toLocaleDateString('tr-TR')}
+                      </p>
                     </div>
                   </div>
 
-                  {res.status === 'completed' && (
+                  {/* Puanlama - sadece onaylı checkin'ler için */}
+                  {checkin.status === 'approved' && (
                     <div className="mt-4 pt-4 border-t border-slate-700/50">
-                      {res.review ? (
-                        <div className="flex items-center gap-4">
-                          <div className="flex items-center gap-2">
-                            <span className={`text-sm ${res.review.was_spot_available ? 'text-green-400' : 'text-red-400'}`}>
-                              {res.review.was_spot_available ? '✓ Yer vardı' : '✗ Yer yoktu'}
-                            </span>
-                          </div>
+                      {checkin.review ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-slate-400">Puanınız:</span>
                           <div className="flex items-center gap-1">
                             {[1, 2, 3, 4, 5].map((star) => (
                               <Star
                                 key={star}
-                                className={`w-4 h-4 ${star <= res.review!.rating ? 'text-yellow-400 fill-yellow-400' : 'text-slate-600'}`}
+                                className={`w-4 h-4 ${star <= checkin.review!.rating ? 'text-yellow-400 fill-yellow-400' : 'text-slate-600'}`}
                               />
                             ))}
                           </div>
                         </div>
-                      ) : ratingReservationId === res.id ? (
-                        <div className="space-y-4">
-                          {ratingStep === 1 ? (
-                            <div>
-                              <p className="text-sm text-slate-300 mb-3">Gittiğinizde yer var mıydı?</p>
-                              <div className="flex items-center gap-3">
+                      ) : ratingCheckinId === checkin.id ? (
+                        <div>
+                          <p className="text-sm text-slate-300 mb-3">Bu otoparkı nasıl değerlendirirsiniz?</p>
+                          <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-1">
+                              {[1, 2, 3, 4, 5].map((star) => (
                                 <button
-                                  onClick={() => {
-                                    setWasSpotAvailable(true)
-                                    setRatingStep(2)
-                                  }}
-                                  className="flex-1 py-3 bg-green-500/20 text-green-400 rounded-xl font-medium hover:bg-green-500/30 transition-colors border border-green-500/30"
+                                  key={star}
+                                  onClick={() => setSelectedRating(star)}
+                                  onMouseEnter={() => setHoverRating(star)}
+                                  onMouseLeave={() => setHoverRating(0)}
+                                  className="transition-transform hover:scale-110"
                                 >
-                                  ✓ Evet, yer vardı
+                                  <Star
+                                    className={`w-7 h-7 ${
+                                      star <= (hoverRating || selectedRating)
+                                        ? 'text-yellow-400 fill-yellow-400'
+                                        : 'text-slate-600'
+                                    }`}
+                                  />
                                 </button>
-                                <button
-                                  onClick={() => {
-                                    setWasSpotAvailable(false)
-                                    setRatingStep(2)
-                                  }}
-                                  className="flex-1 py-3 bg-red-500/20 text-red-400 rounded-xl font-medium hover:bg-red-500/30 transition-colors border border-red-500/30"
-                                >
-                                  ✗ Hayır, yer yoktu
-                                </button>
-                              </div>
-                              <button
-                                onClick={cancelRating}
-                                className="w-full mt-3 py-2 text-slate-400 text-sm hover:text-slate-300 transition-colors"
-                              >
-                                Vazgeç
-                              </button>
+                              ))}
                             </div>
-                          ) : (
-                            <div>
-                              <p className="text-sm text-slate-300 mb-3">Hizmeti nasıl değerlendirirsiniz?</p>
-                              <div className="flex items-center gap-4">
-                                <div className="flex items-center gap-1">
-                                  {[1, 2, 3, 4, 5].map((star) => (
-                                    <button
-                                      key={star}
-                                      onClick={() => setSelectedRating(star)}
-                                      onMouseEnter={() => setHoverRating(star)}
-                                      onMouseLeave={() => setHoverRating(0)}
-                                      className="transition-transform hover:scale-110"
-                                    >
-                                      <Star
-                                        className={`w-7 h-7 ${
-                                          star <= (hoverRating || selectedRating)
-                                            ? 'text-yellow-400 fill-yellow-400'
-                                            : 'text-slate-600'
-                                        }`}
-                                      />
-                                    </button>
-                                  ))}
-                                </div>
-                                {selectedRating > 0 && (
-                                  <span className="text-sm text-slate-400">
-                                    {selectedRating === 1 && 'Çok Kötü'}
-                                    {selectedRating === 2 && 'Kötü'}
-                                    {selectedRating === 3 && 'Orta'}
-                                    {selectedRating === 4 && 'İyi'}
-                                    {selectedRating === 5 && 'Mükemmel'}
-                                  </span>
-                                )}
-                              </div>
-                              <div className="flex items-center gap-3 mt-4">
-                                <button
-                                  onClick={() => setRatingStep(1)}
-                                  className="px-4 py-2 bg-slate-700 text-slate-300 text-sm font-medium rounded-lg hover:bg-slate-600 transition-colors"
-                                >
-                                  Geri
-                                </button>
-                                <button
-                                  onClick={() => handleRating(res.id, res.parking?.id)}
-                                  disabled={selectedRating === 0 || submittingRating}
-                                  className="flex-1 py-2 bg-cyan-500 text-white text-sm font-medium rounded-xl hover:bg-cyan-600 disabled:opacity-50 transition-colors"
-                                >
-                                  {submittingRating ? 'Gönderiliyor...' : 'Değerlendirmeyi Gönder'}
-                                </button>
-                              </div>
-                            </div>
-                          )}
+                            {selectedRating > 0 && (
+                              <span className="text-sm text-slate-400">
+                                {selectedRating === 1 && 'Çok Kötü'}
+                                {selectedRating === 2 && 'Kötü'}
+                                {selectedRating === 3 && 'Orta'}
+                                {selectedRating === 4 && 'İyi'}
+                                {selectedRating === 5 && 'Mükemmel'}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-3 mt-4">
+                            <button
+                              onClick={() => {
+                                setRatingCheckinId(null)
+                                setSelectedRating(0)
+                              }}
+                              className="px-4 py-2 bg-slate-700 text-slate-300 text-sm font-medium rounded-lg hover:bg-slate-600 transition-colors"
+                            >
+                              Vazgeç
+                            </button>
+                            <button
+                              onClick={() => handleRating(checkin.id, checkin.parking_id)}
+                              disabled={selectedRating === 0 || submittingRating}
+                              className="flex-1 py-2 bg-cyan-500 text-white text-sm font-medium rounded-xl hover:bg-cyan-600 disabled:opacity-50 transition-colors"
+                            >
+                              {submittingRating ? 'Gönderiliyor...' : 'Değerlendirmeyi Gönder'}
+                            </button>
+                          </div>
                         </div>
                       ) : (
                         <button
-                          onClick={() => startRating(res.id)}
+                          onClick={() => setRatingCheckinId(checkin.id)}
                           className="flex items-center gap-2 text-sm text-yellow-400 hover:text-yellow-300 transition-colors"
                         >
                           <Star className="w-4 h-4" />

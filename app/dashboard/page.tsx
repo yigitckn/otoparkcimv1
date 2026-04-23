@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Search, MapPin, Bell, X, Star, Clock, Shield, Car, Zap, Droplets, Wifi, ChevronLeft, ChevronRight, Navigation, List, Map as MapIcon } from 'lucide-react'
 import dynamic from 'next/dynamic'
+import CheckinModal from '@/components/CheckinModal'
 
 const Map = dynamic(() => import('@/components/map/Map'), { ssr: false })
 
@@ -14,7 +15,6 @@ export default function DashboardPage() {
   const [parkings, setParkings] = useState<Parking[]>([])
   const [selectedParking, setSelectedParking] = useState<Parking | null>(null)
   const [showDetail, setShowDetail] = useState(false)
-  const [activeReservation, setActiveReservation] = useState<any>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState('all')
   const [featureFilters, setFeatureFilters] = useState<string[]>([])
@@ -25,6 +25,7 @@ export default function DashboardPage() {
   const [parkingReviews, setParkingReviews] = useState<any[]>([])
   const [mobileView, setMobileView] = useState<'list' | 'map'>('list')
   const [searchCenter, setSearchCenter] = useState<{ lat: number; lng: number } | null>(null)
+  const [showCheckinModal, setShowCheckinModal] = useState(false)
 
   const supabase = createClient()
   const router = useRouter()
@@ -84,7 +85,6 @@ export default function DashboardPage() {
     }
 
     loadParkings()
-    loadReservation()
   }
 
   const loadParkings = async () => {
@@ -96,18 +96,6 @@ export default function DashboardPage() {
       console.error('Hata:', error)
     } finally {
       setLoading(false)
-    }
-  }
-
-  const loadReservation = async () => {
-    try {
-      const res = await fetch('/api/reservations')
-      if (res.ok) {
-        const data = await res.json()
-        setActiveReservation(data.reservation)
-      }
-    } catch (e) {
-      console.error('Rezervasyon yüklenemedi')
     }
   }
 
@@ -128,40 +116,6 @@ export default function DashboardPage() {
     await loadParkingReviews(parking.id)
   }
 
-  const handleCancel = async () => {
-    if (!activeReservation) return
-    try {
-      const res = await fetch('/api/reservations/' + activeReservation.id, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'cancelled' })
-      })
-      if (res.ok) {
-        setActiveReservation(null)
-        alert('Rezervasyon iptal edildi')
-      }
-    } catch (e) {
-      alert('Hata')
-    }
-  }
-
-  const handleArrived = async () => {
-    if (!activeReservation) return
-    try {
-      const res = await fetch('/api/reservations/' + activeReservation.id, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'completed', arrived_at: new Date().toISOString() })
-      })
-      if (res.ok) {
-        setActiveReservation(null)
-        alert('Hoşgeldiniz!')
-      }
-    } catch (e) {
-      alert('Hata')
-    }
-  }
-
   const toggleFeatureFilter = (feature: string) => {
     setFeatureFilters(prev => 
       prev.includes(feature) ? prev.filter(f => f !== feature) : [...prev, feature]
@@ -169,49 +123,49 @@ export default function DashboardPage() {
   }
 
   const getDistance = (lat1: number, lng1: number, lat2: number, lng2: number) => {
-  const R = 6371
-  const dLat = (lat2 - lat1) * Math.PI / 180
-  const dLng = (lng2 - lng1) * Math.PI / 180
-  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLng/2) * Math.sin(dLng/2)
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
-}
+    const R = 6371
+    const dLat = (lat2 - lat1) * Math.PI / 180
+    const dLng = (lng2 - lng1) * Math.PI / 180
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLng/2) * Math.sin(dLng/2)
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
+  }
 
-const filteredParkings = parkings.filter(p => {
-  if (searchQuery) {
-    const q = searchQuery.toLowerCase()
-    if (!p.name.toLowerCase().includes(q) && !p.address.toLowerCase().includes(q) && !p.district.toLowerCase().includes(q)) {
-      return false
+  const filteredParkings = parkings.filter(p => {
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase()
+      if (!p.name.toLowerCase().includes(q) && !p.address.toLowerCase().includes(q) && !p.district.toLowerCase().includes(q)) {
+        return false
+      }
     }
-  }
-  if (sortBy === 'available' && p.status === 'full') return false
-  if (featureFilters.length > 0) {
-    const parkingFeatures = p.features || []
-    for (const f of featureFilters) {
-      if (!parkingFeatures.includes(f)) return false
+    if (sortBy === 'available' && p.status === 'full') return false
+    if (featureFilters.length > 0) {
+      const parkingFeatures = p.features || []
+      for (const f of featureFilters) {
+        if (!parkingFeatures.includes(f)) return false
+      }
     }
-  }
-  return true
-}).sort((a, b) => {
-  if (sortBy === 'cheapest') return a.hourly_price - b.hourly_price
-  if (sortBy === 'rating') return (b.trust_score || 0) - (a.trust_score || 0)
-  if (userLocation) {
-    const distA = getDistance(userLocation.lat, userLocation.lng, Number(a.latitude), Number(a.longitude))
-    const distB = getDistance(userLocation.lat, userLocation.lng, Number(b.latitude), Number(b.longitude))
-    return distA - distB
-  }
-  return 0
-})
+    return true
+  }).sort((a, b) => {
+    if (sortBy === 'cheapest') return a.hourly_price - b.hourly_price
+    if (sortBy === 'rating') return (b.trust_score || 0) - (a.trust_score || 0)
+    if (userLocation) {
+      const distA = getDistance(userLocation.lat, userLocation.lng, Number(a.latitude), Number(a.longitude))
+      const distB = getDistance(userLocation.lat, userLocation.lng, Number(b.latitude), Number(b.longitude))
+      return distA - distB
+    }
+    return 0
+  })
 
-const nearbyParkings = filteredParkings.filter(p => {
-  const center = searchCenter || userLocation
-  if (!center) return true
-  const dist = getDistance(center.lat, center.lng, Number(p.latitude), Number(p.longitude))
-  return dist <= 3
-})
+  const nearbyParkings = filteredParkings.filter(p => {
+    const center = searchCenter || userLocation
+    if (!center) return true
+    const dist = getDistance(center.lat, center.lng, Number(p.latitude), Number(p.longitude))
+    return dist <= 3
+  })
 
-const sortOptions = [
+  const sortOptions = [
     { key: 'all', label: 'Tümü' },
     { key: 'cheapest', label: 'En Ucuz' },
     { key: 'rating', label: 'En Yüksek Puan' },
@@ -224,37 +178,19 @@ const sortOptions = [
     { key: 'car_wash', label: 'Oto Yıkama', icon: Droplets },
   ]
 
-  const handleReservation = async (parkingId: string) => {
-    try {
-      const res = await fetch('/api/reservations', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ parking_id: parkingId })
-      })
-      if (res.ok) {
-        alert('Rezervasyon yapıldı!')
-        setSelectedParking(null)
-        setShowDetail(false)
-        loadReservation()
-      } else {
-        const data = await res.json()
-        alert(data.error || 'Hata')
-      }
-    } catch (e) {
-      alert('Hata')
-    }
-  }
-
   const closeDetail = () => {
     setShowDetail(false)
     setSelectedParking(null)
   }
+
   const handleAreaSearch = (center: { lat: number; lng: number }) => {
-  setSearchCenter(center)
-}
-const handleResetSearch = () => {
-  setSearchCenter(null)
-}
+    setSearchCenter(center)
+  }
+
+  const handleResetSearch = () => {
+    setSearchCenter(null)
+  }
+
   const getMapsUrl = (lat: number, lng: number) => {
     return 'https://www.google.com/maps/dir/?api=1&destination=' + lat + ',' + lng
   }
@@ -392,8 +328,8 @@ const handleResetSearch = () => {
           <div className="p-4 border-b bg-gray-50">
             <h2 className="font-bold text-gray-800">Yakın Otoparklar</h2>
             <p className="text-sm text-gray-500">
-          📍 {nearbyParkings.length} otopark <span className="text-blue-500 font-medium">{searchCenter ? 'bu bölgede' : '3 km içinde'}</span>
-        </p>
+              📍 {nearbyParkings.length} otopark <span className="text-blue-500 font-medium">{searchCenter ? 'bu bölgede' : '3 km içinde'}</span>
+            </p>
           </div>
           <div className="p-3 border-b bg-white lg:hidden">
             <FilterBar />
@@ -407,11 +343,11 @@ const handleResetSearch = () => {
             >
               <div className="flex gap-3">
                 {parking.source === 'ispark' ? (
-                <img src="/images/ispark-logo.png" alt="İSPARK" className="w-14 h-14 rounded-xl object-contain" />
-            ) : (
-                <div className={'w-14 h-14 rounded-xl flex items-center justify-center text-white font-bold text-lg ' + (parking.status === 'available' ? 'bg-gradient-to-br from-green-500 to-emerald-600' : parking.status === 'limited' ? 'bg-gradient-to-br from-yellow-500 to-orange-500' : 'bg-gradient-to-br from-red-500 to-rose-600')}>
-                 P
-                </div>
+                  <img src="/images/ispark-logo.png" alt="İSPARK" className="w-14 h-14 rounded-xl object-contain" />
+                ) : (
+                  <div className={'w-14 h-14 rounded-xl flex items-center justify-center text-white font-bold text-lg ' + (parking.status === 'available' ? 'bg-gradient-to-br from-green-500 to-emerald-600' : parking.status === 'limited' ? 'bg-gradient-to-br from-yellow-500 to-orange-500' : 'bg-gradient-to-br from-red-500 to-rose-600')}>
+                    P
+                  </div>
                 )}
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-gray-800 text-sm truncate">{parking.name}</h3>
@@ -426,12 +362,6 @@ const handleResetSearch = () => {
               </div>
             </div>
           ))}
-
-          {activeReservation && mobileView === 'list' && (
-            <div className="p-4 lg:hidden">
-              <ActiveReservation reservation={activeReservation} onCancel={handleCancel} onArrived={handleArrived} />
-            </div>
-          )}
         </div>
 
         <div className={`flex-1 relative ${mobileView === 'map' ? 'block' : 'hidden'} lg:block`}>
@@ -439,17 +369,6 @@ const handleResetSearch = () => {
             <FilterBar />
           </div>
           <Map parkings={filteredParkings} selectedParking={selectedParking} userLocation={userLocation} onMarkerClick={handleSelectParking} onAreaSearch={handleAreaSearch} searchCenter={searchCenter} onResetSearch={handleResetSearch} />
-          
-          {activeReservation && (
-            <div className="absolute bottom-4 left-4 right-4 z-20 hidden lg:block">
-              <ActiveReservation reservation={activeReservation} onCancel={handleCancel} onArrived={handleArrived} />
-            </div>
-          )}
-          {activeReservation && mobileView === 'map' && (
-            <div className="absolute bottom-4 left-4 right-4 z-20 lg:hidden">
-              <ActiveReservation reservation={activeReservation} onCancel={handleCancel} onArrived={handleArrived} />
-            </div>
-          )}
         </div>
 
         <div className={`fixed top-0 right-0 h-full w-full sm:w-[480px] bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out ${showDetail && selectedParking ? 'translate-x-0' : 'translate-x-full'}`}>
@@ -520,33 +439,33 @@ const handleResetSearch = () => {
                       Fiyatlandırma
                     </h4>
                     {selectedParking.hourly_price > 0 || (selectedParking.price_ranges && selectedParking.price_ranges.length > 0) ? (
-              <div>
-                 <div className="bg-blue-50 rounded-xl p-4 space-y-2">
-               {selectedParking.price_ranges && selectedParking.price_ranges.length > 0 ? (
-             selectedParking.price_ranges.map((range: any, idx: number) => (
-                <div key={idx} className="flex justify-between items-center">
-                 <span className="text-gray-600 text-sm">{range.min_hour}-{range.max_hour || '+'} saat</span>
-                  <span className="font-bold text-blue-600">{range.price} TL</span>
-          </div>
-           ))
-         ) : (
-        <div className="flex justify-between items-center">
-          <span className="text-gray-600 text-sm">Saatlik</span>
-              <span className="font-bold text-blue-600">{selectedParking.hourly_price} TL</span>
-              </div>
-           )}
-               </div>
-              {selectedParking.source === 'ispark' && (
-               <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
-                 <span>ℹ️</span> Bazı lokasyonlarda fiyat farklılık gösterebilir
-                   </p>
-                )}
-                   </div>
-                ) : (
-                   <div className="bg-amber-50 rounded-xl p-4 text-center">
-                   <p className="text-amber-700 text-sm font-medium">Fiyat bilgisi henüz eklenmedi</p>
-                   <p className="text-amber-600 text-xs mt-1">İşletme tarafından güncellenecek</p>
-                  </div>
+                      <div>
+                        <div className="bg-blue-50 rounded-xl p-4 space-y-2">
+                          {selectedParking.price_ranges && selectedParking.price_ranges.length > 0 ? (
+                            selectedParking.price_ranges.map((range: any, idx: number) => (
+                              <div key={idx} className="flex justify-between items-center">
+                                <span className="text-gray-600 text-sm">{range.min_hour}-{range.max_hour || '+'} saat</span>
+                                <span className="font-bold text-blue-600">{range.price} TL</span>
+                              </div>
+                            ))
+                          ) : (
+                            <div className="flex justify-between items-center">
+                              <span className="text-gray-600 text-sm">Saatlik</span>
+                              <span className="font-bold text-blue-600">{selectedParking.hourly_price} TL</span>
+                            </div>
+                          )}
+                        </div>
+                        {selectedParking.source === 'ispark' && (
+                          <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
+                            <span>ℹ️</span> Bazı lokasyonlarda fiyat farklılık gösterebilir
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="bg-amber-50 rounded-xl p-4 text-center">
+                        <p className="text-amber-700 text-sm font-medium">Fiyat bilgisi henüz eklenmedi</p>
+                        <p className="text-amber-600 text-xs mt-1">İşletme tarafından güncellenecek</p>
+                      </div>
                     )}
                   </div>
                   {selectedParking.features && selectedParking.features.length > 0 && (
@@ -599,9 +518,6 @@ const handleResetSearch = () => {
                                 ))}
                               </div>
                             </div>
-                            <p className={`text-xs ${review.was_spot_available ? 'text-green-600' : 'text-red-600'}`}>
-                              {review.was_spot_available ? '✓ Yer vardı' : '✗ Yer yoktu'}
-                            </p>
                           </div>
                         ))}
                       </div>
@@ -620,9 +536,12 @@ const handleResetSearch = () => {
                     <Navigation className="w-5 h-5" />
                     Yol Tarifi
                   </a>
-                  <button onClick={() => handleReservation(selectedParking.id)} disabled={selectedParking.status === 'full' || !!activeReservation} className={'flex-1 py-3.5 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2 ' + (selectedParking.status === 'full' || activeReservation ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg shadow-green-500/30')}>
+                  <button 
+                    onClick={() => setShowCheckinModal(true)} 
+                    className="flex-1 py-3.5 rounded-xl font-semibold text-white bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg shadow-green-500/30 transition-all flex items-center justify-center gap-2"
+                  >
                     <Car className="w-5 h-5" />
-                    GELİYORUM
+                    PARK ETTİM
                   </button>
                 </div>
               </div>
@@ -633,48 +552,18 @@ const handleResetSearch = () => {
         {showDetail && selectedParking && (
           <div className="fixed inset-0 bg-black/20 z-40 lg:hidden" onClick={closeDetail} />
         )}
-      </div>
-    </div>
-  )
-}
 
-function ActiveReservation({ reservation, onCancel, onArrived }: { reservation: any, onCancel: () => void, onArrived: () => void }) {
-  const [timeLeft, setTimeLeft] = useState('')
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const now = new Date().getTime()
-      const expires = new Date(reservation.expires_at).getTime()
-      const diff = expires - now
-
-      if (diff <= 0) {
-        setTimeLeft('Süre doldu')
-        clearInterval(interval)
-      } else {
-        const mins = Math.floor(diff / 60000)
-        const secs = Math.floor((diff % 60000) / 1000)
-        setTimeLeft(mins + ':' + (secs < 10 ? '0' : '') + secs)
-      }
-    }, 1000)
-
-    return () => clearInterval(interval)
-  }, [reservation.expires_at])
-
-  return (
-    <div className="bg-white rounded-2xl shadow-xl p-5 border border-gray-100">
-      <div className="flex justify-between items-center mb-4">
-        <div>
-          <h3 className="font-bold text-lg text-gray-900">Aktif Rezervasyon</h3>
-          <p className="text-gray-500 text-sm">{reservation.parking?.name || 'Otopark'}</p>
-        </div>
-        <div className="text-right">
-          <p className="text-3xl font-bold text-blue-600">{timeLeft}</p>
-          <p className="text-xs text-gray-500">kalan süre</p>
-        </div>
-      </div>
-      <div className="flex gap-3">
-        <button onClick={onCancel} className="flex-1 py-3 border-2 border-red-500 text-red-500 rounded-xl font-semibold hover:bg-red-50 transition-colors">İptal Et</button>
-        <button onClick={onArrived} className="flex-1 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-semibold hover:from-green-600 hover:to-emerald-700 shadow-lg shadow-green-500/30 transition-colors">Vardım</button>
+        {showCheckinModal && selectedParking && (
+          <CheckinModal
+            parking={{ id: selectedParking.id, name: selectedParking.name }}
+            onClose={() => setShowCheckinModal(false)}
+            onSuccess={() => {
+              setShowCheckinModal(false)
+              setShowDetail(false)
+              setSelectedParking(null)
+            }}
+          />
+        )}
       </div>
     </div>
   )

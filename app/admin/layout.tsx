@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { LayoutDashboard, ParkingSquare, FileCheck, LogOut, Menu, X } from 'lucide-react'
+import { LayoutDashboard, ParkingSquare, FileCheck, LogOut, Menu, X, Camera } from 'lucide-react'
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
@@ -64,10 +64,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   const menuItems = [
-    { href: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
-    { href: '/admin/parkings', icon: ParkingSquare, label: 'Otoparklar' },
-    { href: '/admin/claims', icon: FileCheck, label: 'Başvurular' },
-  ]
+  { href: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
+  { href: '/admin/parkings', icon: ParkingSquare, label: 'Otoparklar' },
+  { href: '/admin/checkins', icon: Camera, label: 'Park Kayıtları' },
+  { href: '/admin/claims', icon: FileCheck, label: 'Başvurular' },
+]
 
   return (
     <div className="min-h-screen bg-slate-950 flex">
