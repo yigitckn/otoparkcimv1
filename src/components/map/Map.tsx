@@ -10,7 +10,12 @@ interface MapProps {
   selectedParking: Parking | null
   userLocation: { lat: number; lng: number } | null
   onMarkerClick: (parking: Parking) => void
-  onAreaSearch?: (center: { lat: number; lng: number }) => void
+  onAreaSearch?: (bounds: {
+    north: number
+    south: number
+    east: number
+    west: number
+  }) => void
   searchCenter?: { lat: number; lng: number } | null
   onResetSearch?: () => void
 }
@@ -180,9 +185,17 @@ export default function Map({ parkings, selectedParking, userLocation, onMarkerC
       <div className="absolute top-20 left-1/2 -translate-x-1/2 z-10">
       <button
           onClick={() => {
-         onAreaSearch(mapCenter)
-        setShowAreaSearch(false)
-       }}
+            const bounds = map?.getBounds()
+            if (bounds) {
+              onAreaSearch({
+                north: bounds.getNorthEast().lat(),
+                south: bounds.getSouthWest().lat(),
+                east: bounds.getNorthEast().lng(),
+                west: bounds.getSouthWest().lng()
+              })
+            }
+            setShowAreaSearch(false)
+          }}
         className="px-4 py-2.5 bg-white rounded-full shadow-lg border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all flex items-center gap-2"
       >
         <span>🔍</span> Bu alanda ara

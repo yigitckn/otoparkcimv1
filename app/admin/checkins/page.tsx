@@ -21,6 +21,7 @@ interface Checkin {
   profiles?: {
     full_name: string
     email: string
+    license_plate?: string
   }
 }
 
@@ -52,7 +53,7 @@ export default function AdminCheckinsPage() {
       
       const { data: profile } = await supabase
         .from('profiles')
-        .select('full_name, email')
+        .select('full_name, email, license_plate')
         .eq('id', checkin.user_id)
         .single()
 
@@ -243,7 +244,7 @@ export default function AdminCheckinsPage() {
                 className="w-full h-64 object-cover rounded-xl mb-4"
               />
 
-              <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="grid grid-cols-3 gap-4 mb-4">
                 <div className="bg-slate-900 rounded-xl p-4">
                   <p className="text-slate-400 text-sm mb-1">Otopark</p>
                   <p className="text-white font-medium">{selectedCheckin.parking?.name}</p>
@@ -253,6 +254,12 @@ export default function AdminCheckinsPage() {
                   <p className="text-slate-400 text-sm mb-1">Kullanıcı</p>
                   <p className="text-white font-medium">{selectedCheckin.profiles?.full_name || 'Anonim'}</p>
                   <p className="text-slate-400 text-sm">{selectedCheckin.profiles?.email}</p>
+                </div>
+                <div className="bg-slate-900 rounded-xl p-4">
+                  <p className="text-slate-400 text-sm mb-1">Araç Plakası</p>
+                  <p className="text-white font-medium text-lg">
+                    {selectedCheckin.profiles?.license_plate || '❌ Plaka yok'}
+                  </p>
                 </div>
               </div>
 

@@ -15,7 +15,8 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-
+  const [licensePlate, setLicensePlate] = useState('')
+  const [acceptPlatePolicy, setAcceptPlatePolicy] = useState(false)
   const router = useRouter()
   const supabase = createClient()
 
@@ -23,6 +24,13 @@ export default function RegisterPage() {
     e.preventDefault()
     setLoading(true)
     setError('')
+
+    // Plaka girildi ama onay verilmedi
+    if (licensePlate && !acceptPlatePolicy) {
+      setError('Plaka kullanımı için gizlilik politikasını kabul etmelisiniz.')
+      setLoading(false)
+      return
+    }
 
     const { data, error: signUpError } = await supabase.auth.signUp({
       email,
@@ -42,10 +50,20 @@ export default function RegisterPage() {
     }
 
     if (data.user) {
-      await supabase.from('profiles').update({
+      // Profile güncelle - plaka varsa ekle
+      const profileData: any = {
         full_name: fullName,
         phone: phone
-      }).eq('id', data.user.id)
+      }
+
+      // Plaka varsa ve onay verildiyse ekle
+      if (licensePlate && acceptPlatePolicy) {
+        profileData.license_plate = licensePlate
+        profileData.plate_consent_given = true
+        profileData.plate_consent_date = new Date().toISOString()
+      }
+
+      await supabase.from('profiles').update(profileData).eq('id', data.user.id)
     }
 
     router.push('/dashboard')
@@ -83,28 +101,28 @@ export default function RegisterPage() {
               Otopark<span className="text-[#5ea3ff]">çım</span>
             </span>
           </div>
-
+          
           {/* Alt kısım - Animasyonlu metin */}
           <div>
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.08] border border-white/[0.18] backdrop-blur-sm mb-6">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-              <span className="text-[11px] font-bold tracking-[2px] text-white/80">ÜCRETSİZ KAYIT</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+              <span className="text-[11px] font-bold tracking-[2px] text-white/80">TANIDIK BİR HİKAYE</span>
             </div>
 
             {/* Dönen metinler */}
             <div className="relative h-[68px] mb-3">
               <div className="pain-word pain-1">
-                <span className="text-[44px] font-bold tracking-tight text-white leading-none">Anında kayıt ol...</span>
+                <span className="text-[44px] font-bold tracking-tight text-white leading-none">Park yeri derdi...</span>
               </div>
               <div className="pain-word pain-2">
-                <span className="text-[44px] font-bold tracking-tight text-white leading-none">Otoparkları keşfet...</span>
+                <span className="text-[44px] font-bold tracking-tight text-white leading-none">Dolu otoparklar...</span>
               </div>
               <div className="pain-word pain-3">
-                <span className="text-[44px] font-bold tracking-tight text-white leading-none">Fiyatları karşılaştır...</span>
+                <span className="text-[44px] font-bold tracking-tight text-white leading-none">Tutarsız fiyatlar...</span>
               </div>
               <div className="pain-word pain-4">
-                <span className="text-[44px] font-bold tracking-tight text-white leading-none">Puan kazan...</span>
+                <span className="text-[44px] font-bold tracking-tight text-white leading-none">Saatlerce arama...</span>
               </div>
             </div>
 
@@ -112,7 +130,7 @@ export default function RegisterPage() {
             <div className="finale mb-5">
               <div className="flex items-center gap-4">
                 <span className="text-[56px] font-extrabold tracking-tighter leading-none bg-gradient-to-r from-white to-[#cfe4ff] bg-clip-text text-transparent">
-                  Hemen başla.
+                  Artık yok.
                 </span>
                 <svg width="40" height="40" viewBox="0 0 40 40" className="opacity-95">
                   <circle cx="20" cy="20" r="18" fill="#10b981"/>
@@ -232,6 +250,50 @@ export default function RegisterPage() {
                 </button>
               </div>
             </div>
+
+            {/* Plaka - Opsiyonel */}
+            <div>
+              <label className="block text-xs font-semibold text-white/85 mb-1.5 tracking-wide">
+                ARAÇ PLAKASI (Opsiyonel)
+              </label>
+              <div className="relative">
+                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <rect x="3" y="6" width="18" height="12" rx="2" strokeWidth="2"/>
+                  <path d="M7 10h10M7 14h6" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+                <input
+                  type="text"
+                  value={licensePlate}
+                  onChange={(e) => setLicensePlate(e.target.value.toUpperCase().trim())}
+                  className="w-full pl-10 pr-4 py-3 bg-white/[0.04] border border-white/[0.12] rounded-lg text-white text-sm placeholder-white/40 focus:outline-none focus:border-[#2f7ff5] transition-colors"
+                  placeholder="34 ABC 123"
+                  maxLength={15}
+                />
+              </div>
+              <p className="text-xs text-white/50 mt-1.5 flex items-center gap-1">
+                <span>💡</span>
+                <span>Plaka eklerseniz park onaylarında puan kazanırsınız</span>
+              </p>
+            </div>
+
+            {/* KVKK Onayı - Sadece plaka girilirse göster */}
+            {licensePlate && (
+              <div className="flex items-start gap-2.5 p-3.5 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                <input
+                  type="checkbox"
+                  id="plate-consent"
+                  checked={acceptPlatePolicy}
+                  onChange={(e) => setAcceptPlatePolicy(e.target.checked)}
+                  className="mt-0.5 w-4 h-4 accent-blue-500"
+                />
+                <label htmlFor="plate-consent" className="text-xs text-white/80 leading-relaxed">
+                  Araç plakamın park onayı ve puan sistemi için saklanmasını ve işlenmesini kabul ediyorum.{' '}
+                  <Link href="/privacy" className="text-blue-400 underline underline-offset-2 hover:text-blue-300">
+                    Gizlilik Politikası
+                  </Link>
+                </label>
+              </div>
+            )}
 
             <button
               type="submit"

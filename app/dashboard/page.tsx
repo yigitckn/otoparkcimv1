@@ -25,6 +25,12 @@ export default function DashboardPage() {
   const [parkingReviews, setParkingReviews] = useState<any[]>([])
   const [mobileView, setMobileView] = useState<'list' | 'map'>('list')
   const [searchCenter, setSearchCenter] = useState<{ lat: number; lng: number } | null>(null)
+  const [searchBounds, setSearchBounds] = useState<{
+    north: number
+    south: number
+    east: number
+    west: number
+  } | null>(null)
   const [showCheckinModal, setShowCheckinModal] = useState(false)
 
   const supabase = createClient()
@@ -159,10 +165,21 @@ export default function DashboardPage() {
   })
 
   const nearbyParkings = filteredParkings.filter(p => {
-    const center = searchCenter || userLocation
-    if (!center) return true
-    const dist = getDistance(center.lat, center.lng, Number(p.latitude), Number(p.longitude))
-    return dist <= 3
+    if (searchBounds) {
+      const lat = Number(p.latitude)
+      const lng = Number(p.longitude)
+      return lat <= searchBounds.north && 
+             lat >= searchBounds.south && 
+             lng <= searchBounds.east && 
+             lng >= searchBounds.west
+    }
+    
+    if (userLocation) {
+      const dist = getDistance(userLocation.lat, userLocation.lng, Number(p.latitude), Number(p.longitude))
+      return dist <= 3
+    }
+    
+    return true
   })
 
   const sortOptions = [
@@ -183,12 +200,22 @@ export default function DashboardPage() {
     setSelectedParking(null)
   }
 
-  const handleAreaSearch = (center: { lat: number; lng: number }) => {
-    setSearchCenter(center)
+  const handleAreaSearch = (bounds: {
+    north: number
+    south: number
+    east: number
+    west: number
+  }) => {
+    setSearchBounds(bounds)
+    setSearchCenter({
+      lat: (bounds.north + bounds.south) / 2,
+      lng: (bounds.east + bounds.west) / 2
+    })
   }
 
   const handleResetSearch = () => {
     setSearchCenter(null)
+    setSearchBounds(null)
   }
 
   const getMapsUrl = (lat: number, lng: number) => {
@@ -328,7 +355,7 @@ export default function DashboardPage() {
           <div className="p-4 border-b bg-gray-50">
             <h2 className="font-bold text-gray-800">Yakın Otoparklar</h2>
             <p className="text-sm text-gray-500">
-              📍 {nearbyParkings.length} otopark <span className="text-blue-500 font-medium">{searchCenter ? 'bu bölgede' : '3 km içinde'}</span>
+              📍 {nearbyParkings.length} otopark <span className="text-blue-500 font-medium">{searchBounds ? 'bu bölgede' : '3 km içinde'}</span>
             </p>
           </div>
           <div className="p-3 border-b bg-white lg:hidden">

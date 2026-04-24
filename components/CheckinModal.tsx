@@ -19,29 +19,61 @@ export default function CheckinModal({ parking, onClose, onSuccess }: CheckinMod
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+  const [skipPhoto, setSkipPhoto] = useState(false)
+  const [photoMetadata, setPhotoMetadata] = useState<{
+    timestamp: number | null
+    location: { lat: number; lng: number } | null
+  }>({ timestamp: null, location: null })
   const fileInputRef = useRef<HTMLInputElement>(null)
   const cameraInputRef = useRef<HTMLInputElement>(null)
 
   const supabase = createClient()
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
         setError('Fotoğraf 5MB\'dan küçük olmalı')
         return
       }
+      
+      // Metadata kontrolü
+      const timestamp = file.lastModified
+      const now = Date.now()
+      const timeDiff = Math.abs(now - timestamp) / 1000 / 60 // dakika cinsinden
+      
+      // Konum al (geolocation)
+      let location: { lat: number; lng: number } | null = null
+      if (navigator.geolocation) {
+        try {
+          const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 })
+          })
+          location = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          }
+        } catch (err) {
+          console.log('Konum alınamadı:', err)
+        }
+      }
+      
+      setPhotoMetadata({ timestamp, location })
       setPhoto(file)
       setPreview(URL.createObjectURL(file))
       setError('')
+      
+      // Eski fotoğraf uyarısı (10 dakikadan eski)
+      if (timeDiff > 10) {
+        setError('⚠️ Bu fotoğraf eski görünüyor. Lütfen şimdi çekin.')
+        setPhoto(null)
+        setPreview(null)
+        return
+      }
     }
   }
 
   const handleSubmit = async () => {
-    if (!photo) {
-      setError('Lütfen arabanızın fotoğrafını çekin')
-      return
-    }
 
     setLoading(true)
     setError('')
@@ -54,22 +86,27 @@ export default function CheckinModal({ parking, onClose, onSuccess }: CheckinMod
         return
       }
 
-      // Fotoğrafı Storage'a yükle
-      const fileName = `${user.id}/${parking.id}/${Date.now()}.jpg`
-      const { error: uploadError } = await supabase.storage
-        .from('checkin-photos')
-        .upload(fileName, photo)
+      let photoUrl = null
 
-      if (uploadError) {
-        setError('Fotoğraf yüklenemedi: ' + uploadError.message)
-        setLoading(false)
-        return
+      // Fotoğraf varsa yükle
+      if (photo) {
+        const fileName = `${user.id}/${parking.id}/${Date.now()}.jpg`
+        const { error: uploadError } = await supabase.storage
+          .from('checkin-photos')
+          .upload(fileName, photo)
+
+        if (uploadError) {
+          setError('Fotoğraf yüklenemedi: ' + uploadError.message)
+          setLoading(false)
+          return
+        }
+
+        const { data: urlData } = supabase.storage
+          .from('checkin-photos')
+          .getPublicUrl(fileName)
+        
+        photoUrl = urlData.publicUrl
       }
-
-      // Public URL al
-      const { data: urlData } = supabase.storage
-        .from('checkin-photos')
-        .getPublicUrl(fileName)
 
       // Checkin kaydı oluştur
       const { error: checkinError } = await supabase
@@ -77,8 +114,10 @@ export default function CheckinModal({ parking, onClose, onSuccess }: CheckinMod
         .insert({
           user_id: user.id,
           parking_id: parking.id,
-          photo_url: urlData.publicUrl,
-          status: 'pending'
+          photo_url: photoUrl,
+          status: photo ? 'pending' : 'approved', // Fotoğrafsız ise farklı status
+          metadata: photoMetadata,
+          can_earn_points: !!photo // Sadece fotoğraflı olanlar puan kazanabilir
         })
 
       if (checkinError) {
@@ -129,7 +168,9 @@ export default function CheckinModal({ parking, onClose, onSuccess }: CheckinMod
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Teşekkürler!</h2>
           <p className="text-gray-600 mb-2">Park kaydınız alındı.</p>
-          <p className="text-sm text-gray-500">Fotoğrafınız 24 saat içinde kontrol edilecek ve puanınız yüklenecek.</p>
+          <p className="text-sm text-gray-500">
+             {photo ? 'Fotoğrafınız 24 saat içinde kontrol edilecek ve puanınız yüklenecek.' : 'Park kaydınız oluşturuldu.'}
+          </p>
         </div>
       </div>
     )
@@ -218,9 +259,21 @@ export default function CheckinModal({ parking, onClose, onSuccess }: CheckinMod
             </p>
           </div>
 
+          {!photo && !preview && !skipPhoto && (
+            <button
+              onClick={() => {
+                setSkipPhoto(true)
+                setTimeout(() => handleSubmit(), 100)
+              }}
+              className="w-full py-3 mb-3 border-2 border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors text-sm font-medium"
+            >
+              ⚠️ Fotoğrafsız Devam Et (Puan Kazanamazsınız)
+            </button>
+          )}
+
           <button
             onClick={handleSubmit}
-            disabled={!photo || loading}
+            disabled={(!photo && !skipPhoto) || loading}
             className={`w-full py-4 rounded-xl font-semibold text-white flex items-center justify-center gap-2 ${
               !photo || loading
                 ? 'bg-gray-400 cursor-not-allowed'
