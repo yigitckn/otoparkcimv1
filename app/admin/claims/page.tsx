@@ -25,6 +25,16 @@ export default function AdminClaimsPage() {
     setLoading(false)
   }
 
+  const handleViewDocument = async (documentUrl: string) => {
+    const { data } = await supabase.storage
+      .from('owner-documents')
+      .createSignedUrl(documentUrl, 3600)
+    
+    if (data?.signedUrl) {
+      window.open(data.signedUrl, '_blank')
+    }
+  }
+
   const handleApprove = async (claim: any) => {
     if (!confirm('Bu başvuruyu onaylamak istiyor musun?')) return
     setProcessing(true)
@@ -41,11 +51,13 @@ export default function AdminClaimsPage() {
       role: 'parking_owner'
     }).eq('id', claim.user_id)
 
-    await supabase.from('parkings').update({
-      owner_id: claim.user_id,
-      is_claimed: true,
-      claimed_at: new Date().toISOString()
-    }).eq('id', claim.parking.id)
+    if (claim.parking_id) {
+      await supabase.from('parkings').update({
+        owner_id: claim.user_id,
+        is_claimed: true,
+        claimed_at: new Date().toISOString()
+      }).eq('id', claim.parking_id)
+    }
 
     setProcessing(false)
     loadClaims()
@@ -54,6 +66,7 @@ export default function AdminClaimsPage() {
 
   const handleReject = async (claim: any) => {
     const reason = prompt('Red sebebi:')
+    if (!reason) return
     if (!confirm('Bu başvuruyu reddetmek istiyor musun?')) return
     setProcessing(true)
 
@@ -111,6 +124,7 @@ export default function AdminClaimsPage() {
               processing={processing}
               onApprove={handleApprove}
               onReject={handleReject}
+              onViewDocument={handleViewDocument}
             />
           ))}
         </div>
@@ -131,10 +145,16 @@ function FilterButton({ label, value, current, onClick }: { label: string, value
   )
 }
 
-function ClaimCard({ claim, processing, onApprove, onReject }: { claim: any, processing: boolean, onApprove: (c: any) => void, onReject: (c: any) => void }) {
-  const parkingName = claim.parking ? claim.parking.name : 'Bilinmiyor'
+function ClaimCard({ claim, processing, onApprove, onReject, onViewDocument }: { claim: any, processing: boolean, onApprove: (c: any) => void, onReject: (c: any) => void, onViewDocument: (url: string) => void }) {
+  const parkingName = claim.parking ? claim.parking.name : claim.claim_type === 'owner_registration' ? 'İşletme Kaydı' : 'Bilinmiyor'
   const parkingAddress = claim.parking ? claim.parking.address + ', ' + claim.parking.district : ''
   const dateStr = new Date(claim.created_at).toLocaleDateString('tr-TR')
+
+  const documentTypeLabels: { [key: string]: string } = {
+    tax: 'Vergi Levhası',
+    license: 'İşyeri Açma Ruhsatı',
+    lease: 'Kira Sözleşmesi'
+  }
 
   return (
     <div className="bg-slate-800/50 rounded-2xl border border-slate-700/50 p-5">
@@ -144,8 +164,9 @@ function ClaimCard({ claim, processing, onApprove, onReject }: { claim: any, pro
             <h3 className="text-lg font-semibold text-white">{parkingName}</h3>
             <StatusBadge status={claim.status} />
           </div>
-          <p className="text-slate-400 text-sm mb-3">{parkingAddress}</p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+          {parkingAddress && <p className="text-slate-400 text-sm mb-3">{parkingAddress}</p>}
+          
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm mb-3">
             <div>
               <p className="text-slate-500">Başvuran</p>
               <p className="text-white">{claim.full_name}</p>
@@ -155,29 +176,53 @@ function ClaimCard({ claim, processing, onApprove, onReject }: { claim: any, pro
               <p className="text-white">{claim.phone}</p>
             </div>
             <div>
+              <p className="text-slate-500">Email</p>
+              <p className="text-white">{claim.email}</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+            <div>
+              <p className="text-slate-500">Belge Türü</p>
+              <p className="text-white">{documentTypeLabels[claim.document_type] || claim.document_type}</p>
+            </div>
+            <div>
               <p className="text-slate-500">Tarih</p>
               <p className="text-white">{dateStr}</p>
             </div>
           </div>
+
           {claim.reject_reason && (
             <div className="mt-3 p-3 bg-red-500/10 rounded-xl">
               <p className="text-red-400 text-sm">Red sebebi: {claim.reject_reason}</p>
             </div>
           )}
         </div>
+        
         <div className="flex flex-col gap-2 min-w-[140px]">
           {claim.document_url && (
-            <a href={claim.document_url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 px-4 py-2 bg-slate-700 text-white rounded-xl hover:bg-slate-600">
-              Belgeyi Gör
-            </a>
+            <button 
+              onClick={() => onViewDocument(claim.document_url)}
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-slate-700 text-white rounded-xl hover:bg-slate-600"
+            >
+              📄 Belgeyi Gör
+            </button>
           )}
           {claim.status === 'pending' && (
             <>
-              <button onClick={() => onApprove(claim)} disabled={processing} className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 disabled:opacity-50">
-                Onayla
+              <button 
+                onClick={() => onApprove(claim)} 
+                disabled={processing} 
+                className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 disabled:opacity-50"
+              >
+                ✓ Onayla
               </button>
-              <button onClick={() => onReject(claim)} disabled={processing} className="px-4 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 disabled:opacity-50">
-                Reddet
+              <button 
+                onClick={() => onReject(claim)} 
+                disabled={processing} 
+                className="px-4 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 disabled:opacity-50"
+              >
+                ✗ Reddet
               </button>
             </>
           )}

@@ -136,6 +136,8 @@ export default function OwnerRegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [document, setDocument] = useState<File | null>(null)
+  const [documentType, setDocumentType] = useState<'tax' | 'license' | 'lease'>('tax')
 
   const router = useRouter()
   const supabase = createClient()
@@ -144,6 +146,12 @@ export default function OwnerRegisterPage() {
     e.preventDefault()
     setLoading(true)
     setError('')
+
+    if (!document) {
+      setError('Lütfen işletme belgenizi yükleyin')
+      setLoading(false)
+      return
+    }
 
     const { data, error: signUpError } = await supabase.auth.signUp({
       email,
@@ -164,11 +172,36 @@ export default function OwnerRegisterPage() {
     }
 
     if (data.user) {
+      // Profile güncelle
       await supabase.from('profiles').update({
         full_name: fullName,
         phone: phone,
         role: 'parking_owner'
       }).eq('id', data.user.id)
+
+      // Belgeyi yükle ve claim oluştur
+      const fileName = `${data.user.id}/${documentType}_${Date.now()}.${document.name.split('.').pop()}`
+      const { error: uploadError } = await supabase.storage
+        .from('owner-documents')
+        .upload(fileName, document)
+
+      if (uploadError) {
+        setError('Belge yüklenemedi: ' + uploadError.message)
+        setLoading(false)
+        return
+      }
+
+      // Claim kaydı oluştur
+  await supabase.from('ownership_claims').insert({
+     user_id: data.user.id,
+     full_name: fullName,
+     phone: phone,
+     email: email,
+     document_url: fileName,
+     document_type: documentType,
+     status: 'pending',
+     claim_type: 'owner_registration'
+   })
     }
 
     router.push('/owner/dashboard')
@@ -264,6 +297,43 @@ export default function OwnerRegisterPage() {
                   <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors">
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
+                </div>
+              </div>
+
+              {/* Belge Yükleme */}
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  İşletme Belgesi <span className="text-red-400">*</span>
+                </label>
+                <select
+                  value={documentType}
+                  onChange={(e) => setDocumentType(e.target.value as any)}
+                  className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-xl text-white mb-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                >
+                  <option value="tax">Vergi Levhası</option>
+                  <option value="license">İşyeri Açma Ruhsatı</option>
+                  <option value="lease">Kira Sözleşmesi</option>
+                </select>
+                
+                <div className="border-2 border-dashed border-slate-700 rounded-xl p-6 text-center hover:border-purple-500 transition-colors">
+                  <input
+                    type="file"
+                    accept="image/*,application/pdf"
+                    onChange={(e) => setDocument(e.target.files?.[0] || null)}
+                    className="hidden"
+                    id="doc-upload"
+                    required
+                  />
+                  <label htmlFor="doc-upload" className="cursor-pointer">
+                    {document ? (
+                      <p className="text-green-400">✓ {document.name}</p>
+                    ) : (
+                      <>
+                        <p className="text-slate-400 mb-1">📄 Belge yükleyin</p>
+                        <p className="text-slate-500 text-xs">PDF veya resim (max 5MB)</p>
+                      </>
+                    )}
+                  </label>
                 </div>
               </div>
 
