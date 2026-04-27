@@ -157,14 +157,24 @@ const geocodeLocation = async (searchTerm: string) => {
       .limit(5)
     setParkingReviews(data || [])
   }
-
-  const handleSelectParking = async (parking: Parking) => {
+   const logAnalytics = async (parkingId: string, eventType: string) => {
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    await supabase.from('parking_analytics').insert([{
+      parking_id: parkingId,
+      event_type: eventType,
+      user_id: user?.id || null
+    }])
+  }
+   const handleSelectParking = async (parking: Parking) => {
     setSelectedParking(parking)
     setShowDetail(true)
     setCurrentPhotoIndex(0)
     await loadParkingReviews(parking.id)
+    
+    // Analytics kaydet
+    await logAnalytics(parking.id, 'profile_view')
   }
-
   const toggleFeatureFilter = (feature: string) => {
     setFeatureFilters(prev => 
       prev.includes(feature) ? prev.filter(f => f !== feature) : [...prev, feature]
@@ -610,10 +620,16 @@ const geocodeLocation = async (searchTerm: string) => {
                   </Link>
                 )}
                 <div className="flex gap-3">
-                  <a href={getMapsUrl(selectedParking.latitude, selectedParking.longitude)} target="_blank" rel="noopener noreferrer" className="flex-1 py-3.5 border-2 border-blue-600 text-blue-600 rounded-xl text-center font-semibold hover:bg-blue-50 transition-colors flex items-center justify-center gap-2">
-                    <Navigation className="w-5 h-5" />
-                    Yol Tarifi
-                  </a>
+                     <a 
+                 href={getMapsUrl(selectedParking.latitude, selectedParking.longitude)} 
+                  target="_blank" 
+                   rel="noopener noreferrer" 
+                 onClick={() => logAnalytics(selectedParking.id, 'navigation_click')}
+                 className="flex-1 py-3.5 border-2 border-blue-600 text-blue-600 rounded-xl text-center font-semibold hover:bg-blue-50 transition-colors flex items-center justify-center gap-2"
+            >
+              <Navigation className="w-5 h-5" />
+                 Yol Tarifi
+                </a>
                   <button 
                     onClick={() => setShowCheckinModal(true)} 
                     className="flex-1 py-3.5 rounded-xl font-semibold text-white bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg shadow-green-500/30 transition-all flex items-center justify-center gap-2"

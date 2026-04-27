@@ -585,7 +585,7 @@ export default function NewParkingPage() {
                         value={range.price}
                         onChange={(e) => updatePriceRange(range.id, 'price', e.target.value)}
                         className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                        placeholder="30"
+                        placeholder="150"
                         min="0"
                         required
                       />
@@ -603,7 +603,7 @@ export default function NewParkingPage() {
                 </div>
               ))}
             </div>
-            <p className="text-xs text-slate-500 mt-3">Örnek: 0-1 saat 30 TL, 1-3 saat 50 TL, 3+ saat 80 TL</p>
+            <p className="text-xs text-slate-500 mt-3">Örnek: 0-1 saat 150 TL, 1-2 saat 200 TL, 3+ saat 300 TL</p>
           </div>
 
           <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50">
