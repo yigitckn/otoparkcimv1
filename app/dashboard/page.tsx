@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Parking } from '@/types'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Search, MapPin, Bell, X, Star, Clock, Shield, Car, Zap, Droplets, Wifi, ChevronLeft, ChevronRight, Navigation, List, Map as MapIcon } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import CheckinModal from '@/components/CheckinModal'
@@ -35,6 +35,9 @@ export default function DashboardPage() {
 
   const supabase = createClient()
   const router = useRouter()
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [showAuthModal, setShowAuthModal] = useState(false)
+  const searchParams = useSearchParams()
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -48,6 +51,43 @@ export default function DashboardPage() {
   useEffect(() => {
     checkUserAndLoadData()
   }, [])
+    useEffect(() => {
+  const search = searchParams.get('search')
+  if (search) {
+    setSearchQuery(search)
+    // Arama terimini geocoding ile koordinata çevir ve haritayı odakla
+    geocodeLocation(search)
+  }
+}, [searchParams])
+
+// Geocoding fonksiyonu - arama terimini koordinata çevirir
+const geocodeLocation = async (searchTerm: string) => {
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchTerm + ', Istanbul, Turkey')}&limit=1`
+    )
+    const data = await response.json()
+    
+    if (data && data.length > 0) {
+      const lat = parseFloat(data[0].lat)
+      const lng = parseFloat(data[0].lon)
+      
+      // Haritayı bu koordinata odakla
+      setSearchCenter({ lat, lng })
+      
+      // 5km yarıçapında bounds oluştur
+      const offset = 0.045 // yaklaşık 5km
+      setSearchBounds({
+        north: lat + offset,
+        south: lat - offset,
+        east: lng + offset,
+        west: lng - offset
+      })
+    }
+  } catch (error) {
+    console.error('Geocoding hatası:', error)
+  }
+}
 
   useEffect(() => {
     const channel = supabase
@@ -72,26 +112,29 @@ export default function DashboardPage() {
   }, [selectedParking?.id])
 
   const checkUserAndLoadData = async () => {
-    const { data: { user } } = await supabase.auth.getUser()
-    
-    if (!user) {
-      router.push('/auth/login')
-      return
-    }
-
-    const { data: profile } = await supabase.from('profiles').select('role, full_name').eq('id', user.id).single()
-    
-    if (profile?.role === 'parking_owner') {
-      router.push('/owner/dashboard')
-      return
-    }
-
-    if (profile?.full_name) {
-      setUserName(profile.full_name.split(' ')[0])
-    }
-
+  const { data: { user } } = await supabase.auth.getUser()
+  
+  if (!user) {
+    setIsAuthenticated(false)
     loadParkings()
+    return
   }
+
+  setIsAuthenticated(true)
+
+  const { data: profile } = await supabase.from('profiles').select('role, full_name').eq('id', user.id).single()
+  
+  if (profile?.role === 'parking_owner') {
+    router.push('/owner/dashboard')
+    return
+  }
+
+  if (profile?.full_name) {
+    setUserName(profile.full_name.split(' ')[0])
+  }
+
+  loadParkings()
+}
 
   const loadParkings = async () => {
     try {
@@ -365,7 +408,7 @@ export default function DashboardPage() {
           {nearbyParkings.map((parking) => (
             <div
               key={parking.id}
-              onClick={() => handleSelectParking(parking)}
+              onClick={() => isAuthenticated ? handleSelectParking(parking) : setShowAuthModal(true)}
               className={'p-4 border-b cursor-pointer transition-colors ' + (selectedParking?.id === parking.id ? 'bg-blue-50 border-l-4 border-l-blue-600' : 'hover:bg-gray-50')}
             >
               <div className="flex gap-3">
@@ -380,7 +423,15 @@ export default function DashboardPage() {
                   <h3 className="font-semibold text-gray-800 text-sm truncate">{parking.name}</h3>
                   <p className="text-xs text-gray-500 truncate">{parking.address}</p>
                   <div className="flex justify-between items-center mt-2">
-                    <span className={parking.hourly_price > 0 ? "text-sm font-bold text-blue-600" : "text-sm font-medium text-amber-600"}>{parking.hourly_price > 0 ? parking.hourly_price + ' TL/saat' : 'Fiyat bekleniyor'}</span>
+                  {isAuthenticated ? (
+                  <span className={parking.hourly_price > 0 ? "text-sm font-bold text-blue-600" : "text-sm font-medium text-amber-600"}>
+                  {parking.hourly_price > 0 ? parking.hourly_price + ' TL/saat' : 'Fiyat bekleniyor'}
+                </span>
+              ) : (
+                  <span className="text-sm font-medium text-gray-400">
+                Giriş yapın
+                     </span>
+                  )}
                     <span className={'text-xs px-2 py-1 rounded-full font-medium ' + (parking.status === 'available' ? 'bg-green-100 text-green-700' : parking.status === 'limited' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700')}>
                       {parking.status === 'available' ? 'Müsait' : parking.status === 'limited' ? 'Az Yer' : 'Dolu'}
                     </span>
@@ -591,6 +642,34 @@ export default function DashboardPage() {
             }}
           />
         )}
+        {/* Auth Modal - Giriş olmadan karta basınca */}
+{showAuthModal && (
+  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div className="bg-white rounded-2xl w-full max-w-md p-6">
+      <div className="text-center mb-6">
+        <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <Car className="w-8 h-8 text-blue-600" />
+        </div>
+        <h3 className="text-xl font-bold text-gray-900 mb-2">Devam etmek için giriş yapın</h3>
+        <p className="text-gray-600">Fiyatları görmek ve park kaydı oluşturmak için hesabınıza giriş yapmalısınız.</p>
+      </div>
+      <div className="flex flex-col gap-3">
+        <Link href="/auth/login" className="w-full py-3 bg-blue-600 text-white rounded-xl text-center font-semibold hover:bg-blue-700 transition-colors">
+          Giriş Yap
+        </Link>
+        <Link href="/auth/register" className="w-full py-3 border-2 border-gray-300 text-gray-700 rounded-xl text-center font-semibold hover:bg-gray-50 transition-colors">
+          Hesap Oluştur
+        </Link>
+        <button 
+          onClick={() => setShowAuthModal(false)}
+          className="text-gray-500 text-sm hover:text-gray-700 py-2"
+        >
+          Kapat
+        </button>
+      </div>
+    </div>
+  </div>
+ )}
       </div>
     </div>
   )
