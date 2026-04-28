@@ -154,3 +154,73 @@ html {
     animation: fade-in 0.6s ease-out forwards;
     opacity: 0;
 }
+
+
+/* ===== DAMGA KARTI - Landing ile Birebir Aynı ===== */
+
+.stamps {
+    position: relative;
+    z-index: 1;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    backdrop-filter: blur(14px);
+    border-radius: 20px;
+    padding: 22px;
+}
+
+.stamps-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.stamps-head .pill {
+    background: rgba(255, 255, 255, 0.18);
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+}
+
+.stamps-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+}
+
+.stamp {
+    aspect-ratio: 1;
+    border-radius: 50%;
+    border: 1.5px dashed rgba(255, 255, 255, 0.4);
+    display: grid;
+    place-items: center;
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.55);
+    position: relative;
+}
+
+.stamp.done {
+    background: #fff;
+    color: #1d7adb;
+    border: none;
+    font-weight: 800;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.stamp.reward {
+    background: linear-gradient(135deg, #ffd97a, #ffb347);
+    color: #0b2545;
+    border: none;
+    font-weight: 800;
+    box-shadow: 0 6px 18px rgba(255, 184, 71, 0.5);
+}
+
+.stamps-foot {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.7);
+    margin-top: 14px;
+}

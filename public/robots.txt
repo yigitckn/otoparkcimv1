@@ -1,4 +1,11 @@
 User-agent: *
 Allow: /
+Disallow: /dashboard
+Disallow: /dashboard/*
+Disallow: /profile
+Disallow: /profile/*
+Disallow: /auth/
+Disallow: /owner/
+Disallow: /api/
 
-Sitemap: https://otoparkcim.net/sitemap.xml
+Sitemap: https://www.otoparkcim.net/sitemap.xml

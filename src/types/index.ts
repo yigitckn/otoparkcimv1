@@ -14,6 +14,8 @@ export interface Parking {
   is_active: boolean
   trust_score: number
   created_at: string
+  rating?: number
+  review_count?: number
   updated_at: string
   photos?: string[]
   price_ranges?: { min_hour: number; max_hour: number | null; price: number }[]

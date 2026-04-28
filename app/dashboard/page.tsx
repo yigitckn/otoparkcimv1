@@ -51,43 +51,40 @@ export default function DashboardPage() {
   useEffect(() => {
     checkUserAndLoadData()
   }, [])
-    useEffect(() => {
-  const search = searchParams.get('search')
-  if (search) {
-    setSearchQuery(search)
-    // Arama terimini geocoding ile koordinata çevir ve haritayı odakla
-    geocodeLocation(search)
-  }
-}, [searchParams])
 
-// Geocoding fonksiyonu - arama terimini koordinata çevirir
-const geocodeLocation = async (searchTerm: string) => {
-  try {
-    const response = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchTerm + ', Istanbul, Turkey')}&limit=1`
-    )
-    const data = await response.json()
-    
-    if (data && data.length > 0) {
-      const lat = parseFloat(data[0].lat)
-      const lng = parseFloat(data[0].lon)
-      
-      // Haritayı bu koordinata odakla
-      setSearchCenter({ lat, lng })
-      
-      // 5km yarıçapında bounds oluştur
-      const offset = 0.045 // yaklaşık 5km
-      setSearchBounds({
-        north: lat + offset,
-        south: lat - offset,
-        east: lng + offset,
-        west: lng - offset
-      })
+  useEffect(() => {
+    const search = searchParams.get('search')
+    if (search) {
+      setSearchQuery(search)
+      geocodeLocation(search)
     }
-  } catch (error) {
-    console.error('Geocoding hatası:', error)
+  }, [searchParams])
+
+  const geocodeLocation = async (searchTerm: string) => {
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchTerm + ', Istanbul, Turkey')}&limit=1`
+      )
+      const data = await response.json()
+      
+      if (data && data.length > 0) {
+        const lat = parseFloat(data[0].lat)
+        const lng = parseFloat(data[0].lon)
+        
+        setSearchCenter({ lat, lng })
+        
+        const offset = 0.045
+        setSearchBounds({
+          north: lat + offset,
+          south: lat - offset,
+          east: lng + offset,
+          west: lng - offset
+        })
+      }
+    } catch (error) {
+      console.error('Geocoding hatası:', error)
+    }
   }
-}
 
   useEffect(() => {
     const channel = supabase
@@ -112,33 +109,37 @@ const geocodeLocation = async (searchTerm: string) => {
   }, [selectedParking?.id])
 
   const checkUserAndLoadData = async () => {
-  const { data: { user } } = await supabase.auth.getUser()
-  
-  if (!user) {
-    setIsAuthenticated(false)
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (!user) {
+      setIsAuthenticated(false)
+      loadParkings()
+      return
+    }
+
+    setIsAuthenticated(true)
+
+    const { data: profile } = await supabase.from('profiles').select('role, full_name').eq('id', user.id).single()
+    
+    if (profile?.role === 'parking_owner') {
+      router.push('/owner/dashboard')
+      return
+    }
+
+    if (profile?.full_name) {
+      setUserName(profile.full_name.split(' ')[0])
+    }
+
     loadParkings()
-    return
   }
-
-  setIsAuthenticated(true)
-
-  const { data: profile } = await supabase.from('profiles').select('role, full_name').eq('id', user.id).single()
-  
-  if (profile?.role === 'parking_owner') {
-    router.push('/owner/dashboard')
-    return
-  }
-
-  if (profile?.full_name) {
-    setUserName(profile.full_name.split(' ')[0])
-  }
-
-  loadParkings()
-}
 
   const loadParkings = async () => {
     try {
-      const { data, error } = await supabase.from('parkings').select('*').eq('is_active', true)
+      const { data, error } = await supabase
+        .from('parkings')
+        .select('*, rating, review_count')
+        .eq('is_active', true)
+      
       if (error) console.error('Error:', error)
       setParkings(data || [])
     } catch (error) {
@@ -157,7 +158,8 @@ const geocodeLocation = async (searchTerm: string) => {
       .limit(5)
     setParkingReviews(data || [])
   }
-   const logAnalytics = async (parkingId: string, eventType: string) => {
+
+  const logAnalytics = async (parkingId: string, eventType: string) => {
     const { data: { user } } = await supabase.auth.getUser()
     
     await supabase.from('parking_analytics').insert([{
@@ -166,15 +168,22 @@ const geocodeLocation = async (searchTerm: string) => {
       user_id: user?.id || null
     }])
   }
-   const handleSelectParking = async (parking: Parking) => {
-    setSelectedParking(parking)
-    setShowDetail(true)
-    setCurrentPhotoIndex(0)
-    await loadParkingReviews(parking.id)
-    
-    // Analytics kaydet
-    await logAnalytics(parking.id, 'profile_view')
-  }
+
+  const handleSelectParking = async (parking: Parking) => {
+  // ÖNCELİKLE FRESH DATA ÇEK
+  const { data: freshParking } = await supabase
+    .from('parkings')
+    .select('*, rating, review_count')
+    .eq('id', parking.id)
+    .single()
+
+  setSelectedParking(freshParking || parking)
+  setShowDetail(true)
+  setCurrentPhotoIndex(0)
+  await loadParkingReviews(parking.id)
+  await logAnalytics(parking.id, 'profile_view')
+}
+
   const toggleFeatureFilter = (feature: string) => {
     setFeatureFilters(prev => 
       prev.includes(feature) ? prev.filter(f => f !== feature) : [...prev, feature]
@@ -208,7 +217,7 @@ const geocodeLocation = async (searchTerm: string) => {
     return true
   }).sort((a, b) => {
     if (sortBy === 'cheapest') return a.hourly_price - b.hourly_price
-    if (sortBy === 'rating') return (b.trust_score || 0) - (a.trust_score || 0)
+    if (sortBy === 'rating') return (b.rating || 0) - (a.rating || 0)
     if (userLocation) {
       const distA = getDistance(userLocation.lat, userLocation.lng, Number(a.latitude), Number(a.longitude))
       const distB = getDistance(userLocation.lat, userLocation.lng, Number(b.latitude), Number(b.longitude))
@@ -433,18 +442,26 @@ const geocodeLocation = async (searchTerm: string) => {
                   <h3 className="font-semibold text-gray-800 text-sm truncate">{parking.name}</h3>
                   <p className="text-xs text-gray-500 truncate">{parking.address}</p>
                   <div className="flex justify-between items-center mt-2">
-                  {isAuthenticated ? (
-                  <span className={parking.hourly_price > 0 ? "text-sm font-bold text-blue-600" : "text-sm font-medium text-amber-600"}>
-                  {parking.hourly_price > 0 ? parking.hourly_price + ' TL/saat' : 'Fiyat bekleniyor'}
-                </span>
-              ) : (
-                  <span className="text-sm font-medium text-gray-400">
-                Giriş yapın
-                     </span>
-                  )}
-                    <span className={'text-xs px-2 py-1 rounded-full font-medium ' + (parking.status === 'available' ? 'bg-green-100 text-green-700' : parking.status === 'limited' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700')}>
-                      {parking.status === 'available' ? 'Müsait' : parking.status === 'limited' ? 'Az Yer' : 'Dolu'}
-                    </span>
+                    {isAuthenticated ? (
+                      <span className={parking.hourly_price > 0 ? "text-sm font-bold text-blue-600" : "text-sm font-medium text-amber-600"}>
+                        {parking.hourly_price > 0 ? parking.hourly_price + ' TL/saat' : 'Fiyat bekleniyor'}
+                      </span>
+                    ) : (
+                      <span className="text-sm font-medium text-gray-400">
+                        Giriş yapın
+                      </span>
+                    )}
+                    <div className="flex items-center gap-2">
+                      {parking.rating && parking.rating > 0 && (
+                        <div className="flex items-center gap-1">
+                          <Star className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
+                          <span className="text-xs font-semibold text-gray-700">{parking.rating.toFixed(1)}</span>
+                        </div>
+                      )}
+                      <span className={'text-xs px-2 py-1 rounded-full font-medium ' + (parking.status === 'available' ? 'bg-green-100 text-green-700' : parking.status === 'limited' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700')}>
+                        {parking.status === 'available' ? 'Müsait' : parking.status === 'limited' ? 'Az Yer' : 'Dolu'}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -511,9 +528,13 @@ const geocodeLocation = async (searchTerm: string) => {
                     <div className="flex items-center gap-2">
                       <div className="flex items-center gap-1">
                         <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
-                        <span className="text-lg font-bold text-gray-900">{selectedParking.trust_score?.toFixed(1) || '5.0'}</span>
+                        <span className="text-lg font-bold text-gray-900">
+                          {selectedParking.rating ? selectedParking.rating.toFixed(1) : '—'}
+                        </span>
                       </div>
-                      <span className="text-sm text-gray-500">({parkingReviews.length} değerlendirme)</span>
+                      {selectedParking.review_count && selectedParking.review_count > 0 && (
+                        <span className="text-sm text-gray-500">({selectedParking.review_count})</span>
+                      )}
                     </div>
                     <div className="w-px h-8 bg-gray-200" />
                     <div className="text-center">
@@ -606,6 +627,9 @@ const geocodeLocation = async (searchTerm: string) => {
                                 ))}
                               </div>
                             </div>
+                            {review.feedback && (
+                              <p className="text-xs text-gray-600 mt-1">{review.feedback}</p>
+                            )}
                           </div>
                         ))}
                       </div>
@@ -620,16 +644,16 @@ const geocodeLocation = async (searchTerm: string) => {
                   </Link>
                 )}
                 <div className="flex gap-3">
-                     <a 
-                 href={getMapsUrl(selectedParking.latitude, selectedParking.longitude)} 
-                  target="_blank" 
-                   rel="noopener noreferrer" 
-                 onClick={() => logAnalytics(selectedParking.id, 'navigation_click')}
-                 className="flex-1 py-3.5 border-2 border-blue-600 text-blue-600 rounded-xl text-center font-semibold hover:bg-blue-50 transition-colors flex items-center justify-center gap-2"
-            >
-              <Navigation className="w-5 h-5" />
-                 Yol Tarifi
-                </a>
+                  <a 
+                    href={getMapsUrl(selectedParking.latitude, selectedParking.longitude)} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    onClick={() => logAnalytics(selectedParking.id, 'navigation_click')}
+                    className="flex-1 py-3.5 border-2 border-blue-600 text-blue-600 rounded-xl text-center font-semibold hover:bg-blue-50 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Navigation className="w-5 h-5" />
+                    Yol Tarifi
+                  </a>
                   <button 
                     onClick={() => setShowCheckinModal(true)} 
                     className="flex-1 py-3.5 rounded-xl font-semibold text-white bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg shadow-green-500/30 transition-all flex items-center justify-center gap-2"
@@ -658,34 +682,34 @@ const geocodeLocation = async (searchTerm: string) => {
             }}
           />
         )}
-        {/* Auth Modal - Giriş olmadan karta basınca */}
-{showAuthModal && (
-  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-    <div className="bg-white rounded-2xl w-full max-w-md p-6">
-      <div className="text-center mb-6">
-        <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Car className="w-8 h-8 text-blue-600" />
-        </div>
-        <h3 className="text-xl font-bold text-gray-900 mb-2">Devam etmek için giriş yapın</h3>
-        <p className="text-gray-600">Fiyatları görmek ve park kaydı oluşturmak için hesabınıza giriş yapmalısınız.</p>
-      </div>
-      <div className="flex flex-col gap-3">
-        <Link href="/auth/login" className="w-full py-3 bg-blue-600 text-white rounded-xl text-center font-semibold hover:bg-blue-700 transition-colors">
-          Giriş Yap
-        </Link>
-        <Link href="/auth/register" className="w-full py-3 border-2 border-gray-300 text-gray-700 rounded-xl text-center font-semibold hover:bg-gray-50 transition-colors">
-          Hesap Oluştur
-        </Link>
-        <button 
-          onClick={() => setShowAuthModal(false)}
-          className="text-gray-500 text-sm hover:text-gray-700 py-2"
-        >
-          Kapat
-        </button>
-      </div>
-    </div>
-  </div>
- )}
+
+        {showAuthModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl w-full max-w-md p-6">
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Car className="w-8 h-8 text-blue-600" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Devam etmek için giriş yapın</h3>
+                <p className="text-gray-600">Fiyatları görmek ve park kaydı oluşturmak için hesabınıza giriş yapmalısınız.</p>
+              </div>
+              <div className="flex flex-col gap-3">
+                <Link href="/auth/login" className="w-full py-3 bg-blue-600 text-white rounded-xl text-center font-semibold hover:bg-blue-700 transition-colors">
+                  Giriş Yap
+                </Link>
+                <Link href="/auth/register" className="w-full py-3 border-2 border-gray-300 text-gray-700 rounded-xl text-center font-semibold hover:bg-gray-50 transition-colors">
+                  Hesap Oluştur
+                </Link>
+                <button 
+                  onClick={() => setShowAuthModal(false)}
+                  className="text-gray-500 text-sm hover:text-gray-700 py-2"
+                >
+                  Kapat
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
