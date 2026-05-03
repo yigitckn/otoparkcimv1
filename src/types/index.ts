@@ -1,30 +1,26 @@
 export interface Parking {
   id: string
-  owner_id: string | null
   name: string
-  slug: string
+  slug?: string
   address: string
   district: string
   latitude: number
   longitude: number
   hourly_price: number
-  capacity: number
   status: 'available' | 'limited' | 'full'
-  features: string[]
-  is_active: boolean
-  trust_score: number
-  created_at: string
+  capacity?: number
+  features?: string[]
+  photos?: string[]
   rating?: number
   review_count?: number
-  updated_at: string
-  photos?: string[]
-  price_ranges?: { min_hour: number; max_hour: number | null; price: number }[]
-  working_hours?: { [key: string]: string }
-  is_claimed?: boolean
-  claimed_at?: string
-  current_occupancy?: number
   source?: string
-  external_id?: string
+  is_active?: boolean
+  is_claimed?: boolean
+  working_hours?: any
+  price_ranges?: any[]
+  created_at?: string
+  category?: string       // ← VARSA KONTROL ET
+  price_info?: string     // ← EKLE
 }
 
 export interface Reservation {

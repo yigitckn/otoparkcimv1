@@ -11,12 +11,12 @@ import CtaSection from "@/components/landing/cta-section";
 import Footer from "@/components/footer";
 
 export const metadata: Metadata = {
-  title: 'Otoparkçım - İstanbul, Ankara, İzmir Otopark Bul | Ucuz Otopark Arama',
-  description: 'Türkiye\'nin en kapsamlı otopark arama platformu. İstanbul, Ankara, İzmir\'de uygun fiyatlı otopark bul, fiyatları karşılaştır, online rezervasyon yap. 7/24 vale hizmeti.',
-  keywords: 'istanbul otopark, otopark bul, ucuz otopark, otopark fiyatları, ankara otopark, izmir otopark, vale hizmeti, otopark rezervasyon, kadıköy otopark, beşiktaş otopark',
+  title: 'Otoparkçım - İstanbul, Otopark Bul | Ucuz Otopark Arama',
+  description: 'Türkiye\'nin en kapsamlı otopark arama platformu. İstanbul,\'da uygun fiyatlı otopark bul, fiyatları karşılaştır, online rezervasyon yap. 7/24 vale hizmeti.',
+  keywords: 'istanbul otopark, otopark bul, ucuz otopark, otopark fiyatları, beşiktaş otopark, kadıköy otopark, vale hizmeti, otopark rezervasyon, kadıköy otopark, beşiktaş otopark',
   openGraph: {
     title: 'Otoparkçım - Türkiye\'nin Otopark Arama Platformu',
-    description: 'İstanbul, Ankara, İzmir\'de en uygun otoparkları bul ve rezervasyon yap',
+    description: 'İstanbul,\'da en uygun otoparkları bul ve rezervasyon yap',
     url: 'https://www.otoparkcim.net',
     siteName: 'Otoparkçım',
     locale: 'tr_TR',
@@ -74,36 +74,6 @@ export default function HomePage() {
       <TestimonialsSection />
       <OwnerSection />
       <CtaSection />
-      {/* SEO için şehir linkleri */}
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-8">
-            Popüler Şehirler
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 max-w-4xl mx-auto">
-            <a href="/otopark/istanbul" className="text-center p-4 bg-white rounded-lg hover:shadow-md transition">
-              <div className="text-xl font-semibold">İstanbul</div>
-              <div className="text-sm text-gray-600">Otopark Bul</div>
-            </a>
-            <a href="/otopark/ankara" className="text-center p-4 bg-white rounded-lg hover:shadow-md transition">
-              <div className="text-xl font-semibold">Ankara</div>
-              <div className="text-sm text-gray-600">Otopark Bul</div>
-            </a>
-            <a href="/otopark/izmir" className="text-center p-4 bg-white rounded-lg hover:shadow-md transition">
-              <div className="text-xl font-semibold">İzmir</div>
-              <div className="text-sm text-gray-600">Otopark Bul</div>
-            </a>
-            <a href="/otopark/bursa" className="text-center p-4 bg-white rounded-lg hover:shadow-md transition">
-              <div className="text-xl font-semibold">Bursa</div>
-              <div className="text-sm text-gray-600">Otopark Bul</div>
-            </a>
-            <a href="/otopark/antalya" className="text-center p-4 bg-white rounded-lg hover:shadow-md transition">
-              <div className="text-xl font-semibold">Antalya</div>
-              <div className="text-sm text-gray-600">Otopark Bul</div>
-            </a>
-          </div>
-        </div>
-      </section>
       <Footer />
     </div>
   );

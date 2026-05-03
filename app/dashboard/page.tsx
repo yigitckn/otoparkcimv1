@@ -22,6 +22,7 @@ export default function DashboardPage() {
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null)
   const [userName, setUserName] = useState('')
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
+  const [showNearbyButton, setShowNearbyButton] = useState(false)
   const [parkingReviews, setParkingReviews] = useState<any[]>([])
   const [mobileView, setMobileView] = useState<'list' | 'map'>('list')
   const [searchCenter, setSearchCenter] = useState<{ lat: number; lng: number } | null>(null)
@@ -170,19 +171,39 @@ export default function DashboardPage() {
   }
 
   const handleSelectParking = async (parking: Parking) => {
-  // ÖNCELİKLE FRESH DATA ÇEK
-  const { data: freshParking } = await supabase
-    .from('parkings')
-    .select('*, rating, review_count')
-    .eq('id', parking.id)
-    .single()
+    const { data: freshParking } = await supabase
+      .from('parkings')
+      .select('*, rating, review_count')
+      .eq('id', parking.id)
+      .single()
 
-  setSelectedParking(freshParking || parking)
-  setShowDetail(true)
-  setCurrentPhotoIndex(0)
-  await loadParkingReviews(parking.id)
-  await logAnalytics(parking.id, 'profile_view')
-}
+    setSelectedParking(freshParking || parking)
+    setShowDetail(true)
+    setCurrentPhotoIndex(0)
+    await loadParkingReviews(parking.id)
+    await logAnalytics(parking.id, 'profile_view')
+  }
+
+  const showNearbyAvailable = (parking: Parking) => {
+    setShowDetail(false)
+    setSelectedParking(null)
+    
+    setSearchCenter({ 
+      lat: Number(parking.latitude), 
+      lng: Number(parking.longitude) 
+    })
+    
+    const offset = 0.018
+    setSearchBounds({
+      north: Number(parking.latitude) + offset,
+      south: Number(parking.latitude) - offset,
+      east: Number(parking.longitude) + offset,
+      west: Number(parking.longitude) - offset
+    })
+    
+    setSortBy('available')
+    setMobileView('map')
+  }
 
   const toggleFeatureFilter = (feature: string) => {
     setFeatureFilters(prev => 
@@ -538,16 +559,31 @@ export default function DashboardPage() {
                     </div>
                     <div className="w-px h-8 bg-gray-200" />
                     <div className="text-center">
-                      <p className="text-lg font-bold text-gray-900">{selectedParking.capacity || '-'}</p>
-                      <p className="text-xs text-gray-500">Kapasite</p>
-                    </div>
+                  <p className="text-lg font-bold text-gray-900">
+                      {selectedParking.capacity ? 
+                      (selectedParking.category === 'mall' ? '100+' : selectedParking.capacity) 
+                      : '-'}
+                    </p>
+                      <p className="text-xs text-gray-500">Kapasite</p>                   
+                    </div>    
                   </div>
-                  <div className="mt-6">
+                   <div className="mt-6">
                     <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                      <Clock className="w-5 h-5 text-blue-500" />
-                      Fiyatlandırma
-                    </h4>
-                    {selectedParking.hourly_price > 0 || (selectedParking.price_ranges && selectedParking.price_ranges.length > 0) ? (
+                    <Clock className="w-5 h-5 text-blue-500" />
+                    Fiyatlandırma
+                </h4>
+                 {selectedParking.price_info ? (
+            <div>
+          <div className="bg-green-50 rounded-xl p-4">
+         <p className="text-green-700 font-medium text-sm">
+         {selectedParking.price_info.split('ℹ️')[0].trim()}
+        </p>
+       </div>
+        <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
+        <span>ℹ️</span> Fiyat bilgileri AVM resmi sitesinden alınmıştır.
+       </p>
+      </div>
+        ) : selectedParking.hourly_price > 0 || (selectedParking.price_ranges && selectedParking.price_ranges.length > 0) ? (           
                       <div>
                         <div className="bg-blue-50 rounded-xl p-4 space-y-2">
                           {selectedParking.price_ranges && selectedParking.price_ranges.length > 0 ? (
@@ -638,7 +674,7 @@ export default function DashboardPage() {
                 </div>
               </div>
               <div className="p-4 border-t bg-white">
-                {!selectedParking.is_claimed && (
+                {!selectedParking.is_claimed && selectedParking.category !== 'mall' && (
                   <Link href={'/claim/' + selectedParking.id} className="block w-full py-3 mb-3 bg-amber-50 border-2 border-amber-200 text-amber-700 rounded-xl text-center font-medium hover:bg-amber-100 transition-colors">
                     Bu otopark size mi ait?
                   </Link>
@@ -654,13 +690,36 @@ export default function DashboardPage() {
                     <Navigation className="w-5 h-5" />
                     Yol Tarifi
                   </a>
-                  <button 
-                    onClick={() => setShowCheckinModal(true)} 
-                    className="flex-1 py-3.5 rounded-xl font-semibold text-white bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg shadow-green-500/30 transition-all flex items-center justify-center gap-2"
+
+                  {selectedParking.status === 'full' && selectedParking.source !== 'ispark' ? (
+                  <div className="flex-1 flex flex-col gap-2">
+                  <div className="py-2 bg-red-50 border border-red-200 rounded-lg text-center">
+                  <p className="text-red-700 font-medium text-xs">🚫 Bu otopark dolu</p>
+                </div>
+               <button 
+                     onClick={() => showNearbyAvailable(selectedParking)}
+                     className="py-3.5 rounded-xl font-semibold text-white bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 transition-all flex items-center justify-center gap-2"
                   >
-                    <Car className="w-5 h-5" />
-                    PARK ETTİM
-                  </button>
+                     <MapPin className="w-5 h-5" />
+                    <span className="text-sm">Yakındakiler</span>
+                   </button>
+                  </div>
+                  ) : (
+                    <div className="flex-1 space-y-2">
+                      {selectedParking.source === 'ispark' && selectedParking.status === 'full' && (
+                        <p className="text-xs text-center text-amber-600 bg-amber-50 py-2 px-3 rounded-lg">
+                          ⚠️ Otopark dolu görünüyor, güncel durumu kontrol edin
+                        </p>
+                      )}
+                      <button 
+                        onClick={() => setShowCheckinModal(true)} 
+                        className="w-full py-3.5 rounded-xl font-semibold text-white bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg shadow-green-500/30 transition-all flex items-center justify-center gap-2"
+                      >
+                        <Car className="w-5 h-5" />
+                        PARK ETTİM
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

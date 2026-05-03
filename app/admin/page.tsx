@@ -12,18 +12,21 @@ interface Stats {
   pendingClaims: number
   approvedClaims: number
   rejectedClaims: number
+  pendingFreePark: number
 }
-
 export default function AdminDashboard() {
   const [stats, setStats] = useState<Stats>({
-    totalParkings: 0,
-    claimedParkings: 0,
-    unclaimedParkings: 0,
-    totalUsers: 0,
-    pendingClaims: 0,
-    approvedClaims: 0,
-    rejectedClaims: 0
-  })
+  totalParkings: 0,
+  claimedParkings: 0,
+  unclaimedParkings: 0,
+  totalUsers: 0,
+  pendingClaims: 0,
+  approvedClaims: 0,
+  rejectedClaims: 0,
+  pendingFreePark: 0  // ← EKLE
+})
+
+
   const [loading, setLoading] = useState(true)
 
   const supabase = createClient()
@@ -62,11 +65,17 @@ export default function AdminDashboard() {
         .select('*', { count: 'exact', head: true })
         .eq('status', 'approved')
 
-      // Reddedilen başvurular
+         // Reddedilen başvurular
       const { count: rejectedClaims } = await supabase
-        .from('ownership_claims')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'rejected')
+       .from('ownership_claims')
+       .select('*', { count: 'exact', head: true })
+       .eq('status', 'rejected')
+
+         // Bedava park talepleri
+      const { count: pendingFreePark } = await supabase
+       .from('free_park_requests')
+       .select('*', { count: 'exact', head: true })
+       .eq('status', 'pending')
 
       setStats({
         totalParkings: totalParkings || 0,
@@ -75,7 +84,8 @@ export default function AdminDashboard() {
         totalUsers: totalUsers || 0,
         pendingClaims: pendingClaims || 0,
         approvedClaims: approvedClaims || 0,
-        rejectedClaims: rejectedClaims || 0
+        rejectedClaims: rejectedClaims || 0,
+        pendingFreePark: pendingFreePark || 0
       })
     } catch (error) {
       console.error('İstatistik yükleme hatası:', error)
@@ -140,6 +150,14 @@ export default function AdminDashboard() {
       color: 'emerald',
       bgColor: 'bg-emerald-500/20',
       textColor: 'text-emerald-400'
+    },
+    {
+  title: 'Bedava Park Talepleri',
+  value: stats.pendingFreePark || 0,
+  icon: CheckCircle,
+  color: 'purple',
+  bgColor: 'bg-purple-500/20',
+  textColor: 'text-purple-400'
     }
   ]
 
