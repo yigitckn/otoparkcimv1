@@ -27,6 +27,11 @@ interface Checkin {
 
 const SUPABASE_URL = 'https://obmfsfwoanrgsuidylae.supabase.co'
 
+const getPhotoSrc = (photoUrl: string) => {
+  if (photoUrl.startsWith('http')) return photoUrl
+  return `${SUPABASE_URL}/storage/v1/object/public/checkin-photos/${photoUrl}`
+}
+
 export default function AdminCheckinsPage() {
   const [checkins, setCheckins] = useState<Checkin[]>([])
   const [loading, setLoading] = useState(true)
@@ -42,31 +47,11 @@ export default function AdminCheckinsPage() {
   const loadCheckins = async () => {
     const { data, error } = await supabase
       .from('park_checkins')
-      .select('*')
+      .select('*, parkings(name, address), profiles(full_name, email, license_plate)')
       .order('created_at', { ascending: false })
 
     if (!error && data) {
-      const enrichedData = await Promise.all(data.map(async (checkin) => {
-        const { data: parking } = await supabase
-          .from('parkings')
-          .select('name, address')
-          .eq('id', checkin.parking_id)
-          .single()
-        
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('full_name, email, license_plate')
-          .eq('id', checkin.user_id)
-          .single()
-
-        return {
-          ...checkin,
-          parking,
-          profiles: profile
-        }
-      }))
-
-      setCheckins(enrichedData)
+      setCheckins(data as any)
     }
     setLoading(false)
   }
@@ -181,7 +166,7 @@ export default function AdminCheckinsPage() {
           >
             <div className="flex gap-4">
               <img
-                src={`${SUPABASE_URL}/storage/v1/object/public/checkin-photos/${checkin.photo_url}`}
+                src={getPhotoSrc(checkin.photo_url)}
                 alt="Park fotoğrafı"
                 className="w-24 h-24 object-cover rounded-xl"
               />
@@ -238,7 +223,7 @@ export default function AdminCheckinsPage() {
 
             <div className="p-4">
               <img
-                src={`${SUPABASE_URL}/storage/v1/object/public/checkin-photos/${selectedCheckin.photo_url}`}
+                src={getPhotoSrc(selectedCheckin.photo_url)}
                 alt="Park fotoğrafı"
                 className="w-full h-64 object-cover rounded-xl mb-4"
               />
