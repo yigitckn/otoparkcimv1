@@ -25,6 +25,8 @@ interface Checkin {
   }
 }
 
+const SUPABASE_URL = 'https://obmfsfwoanrgsuidylae.supabase.co'
+
 export default function AdminCheckinsPage() {
   const [checkins, setCheckins] = useState<Checkin[]>([])
   const [loading, setLoading] = useState(true)
@@ -32,11 +34,6 @@ export default function AdminCheckinsPage() {
   const [selectedCheckin, setSelectedCheckin] = useState<Checkin | null>(null)
 
   const supabase = createClient()
-
-  const getPhotoUrl = (path: string) => {
-    const { data } = supabase.storage.from('checkin-photos').getPublicUrl(path)
-    return data.publicUrl
-  }
 
   useEffect(() => {
     loadCheckins()
@@ -184,7 +181,7 @@ export default function AdminCheckinsPage() {
           >
             <div className="flex gap-4">
               <img
-                src={getPhotoUrl(checkin.photo_url)}
+                src={`${SUPABASE_URL}/storage/v1/object/public/checkin-photos/${checkin.photo_url}`}
                 alt="Park fotoğrafı"
                 className="w-24 h-24 object-cover rounded-xl"
               />
@@ -241,7 +238,7 @@ export default function AdminCheckinsPage() {
 
             <div className="p-4">
               <img
-                src={getPhotoUrl(selectedCheckin.photo_url)}
+                src={`${SUPABASE_URL}/storage/v1/object/public/checkin-photos/${selectedCheckin.photo_url}`}
                 alt="Park fotoğrafı"
                 className="w-full h-64 object-cover rounded-xl mb-4"
               />
