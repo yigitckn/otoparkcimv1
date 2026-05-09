@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Check, X, Clock, Image, User, MapPin } from 'lucide-react'
+import { Check, X, Clock, User } from 'lucide-react'
 
 interface Checkin {
   id: string
@@ -25,14 +25,6 @@ interface Checkin {
   }
 }
 
-function getPhotoUrl(path: string) {
-  const supabase = createClient()
-  const { data } = supabase.storage
-    .from('checkin-photos')
-    .getPublicUrl(path)
-  return data.publicUrl
-}
-
 export default function AdminCheckinsPage() {
   const [checkins, setCheckins] = useState<Checkin[]>([])
   const [loading, setLoading] = useState(true)
@@ -41,47 +33,50 @@ export default function AdminCheckinsPage() {
 
   const supabase = createClient()
 
+  const getPhotoUrl = (path: string) => {
+    const { data } = supabase.storage.from('checkin-photos').getPublicUrl(path)
+    return data.publicUrl
+  }
+
   useEffect(() => {
     loadCheckins()
   }, [])
 
   const loadCheckins = async () => {
-  const { data, error } = await supabase
-    .from('park_checkins')
-    .select('*')
-    .order('created_at', { ascending: false })
+    const { data, error } = await supabase
+      .from('park_checkins')
+      .select('*')
+      .order('created_at', { ascending: false })
 
-  if (!error && data) {
-    const enrichedData = await Promise.all(data.map(async (checkin) => {
-      const { data: parking } = await supabase
-        .from('parkings')
-        .select('name, address')
-        .eq('id', checkin.parking_id)
-        .single()
-      
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('full_name, email, license_plate')
-        .eq('id', checkin.user_id)
-        .single()
+    if (!error && data) {
+      const enrichedData = await Promise.all(data.map(async (checkin) => {
+        const { data: parking } = await supabase
+          .from('parkings')
+          .select('name, address')
+          .eq('id', checkin.parking_id)
+          .single()
+        
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('full_name, email, license_plate')
+          .eq('id', checkin.user_id)
+          .single()
 
+        return {
+          ...checkin,
+          parking,
+          profiles: profile
+        }
+      }))
 
-      return {
-        ...checkin,
-        parking,
-        profiles: profile
-      }
-    }))
-
-       setCheckins(enrichedData)
-     }
-        setLoading(false)
-       }
+      setCheckins(enrichedData)
+    }
+    setLoading(false)
+  }
 
   const handleApprove = async (checkin: Checkin) => {
-    const points = 10 // Her onaylanan checkin için 10 puan
+    const points = 10
 
-    // Checkin'i onayla
     await supabase
       .from('park_checkins')
       .update({
@@ -91,7 +86,6 @@ export default function AdminCheckinsPage() {
       })
       .eq('id', checkin.id)
 
-    // Kullanıcıya puan ekle
     const { data: userPoints } = await supabase
       .from('user_points')
       .select('*')
@@ -101,7 +95,7 @@ export default function AdminCheckinsPage() {
     if (userPoints) {
       const newTotal = userPoints.total_points + points
       const newApproved = userPoints.approved_checkins + 1
-      const freeParksEarned = Math.floor(newApproved / 5) // Her 5 onaylı checkin = 1 ücretsiz park
+      const freeParksEarned = Math.floor(newApproved / 5)
 
       await supabase
         .from('user_points')
