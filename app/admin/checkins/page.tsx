@@ -25,6 +25,14 @@ interface Checkin {
   }
 }
 
+function getPhotoUrl(path: string) {
+  const supabase = createClient()
+  const { data } = supabase.storage
+    .from('checkin-photos')
+    .getPublicUrl(path)
+  return data.publicUrl
+}
+
 export default function AdminCheckinsPage() {
   const [checkins, setCheckins] = useState<Checkin[]>([])
   const [loading, setLoading] = useState(true)
@@ -182,7 +190,7 @@ export default function AdminCheckinsPage() {
           >
             <div className="flex gap-4">
               <img
-                src={checkin.photo_url}
+                src={getPhotoUrl(checkin.photo_url)}
                 alt="Park fotoğrafı"
                 className="w-24 h-24 object-cover rounded-xl"
               />
@@ -239,7 +247,7 @@ export default function AdminCheckinsPage() {
 
             <div className="p-4">
               <img
-                src={selectedCheckin.photo_url}
+                src={getPhotoUrl(selectedCheckin.photo_url)}
                 alt="Park fotoğrafı"
                 className="w-full h-64 object-cover rounded-xl mb-4"
               />
