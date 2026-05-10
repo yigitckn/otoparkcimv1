@@ -250,6 +250,8 @@ export default function AdminCheckinsPage() {
                 src={getPhotoSrc(selectedCheckin.photo_url)}
                 alt="Park fotoğrafı"
                 className="w-full h-64 object-cover rounded-xl mb-4"
+                onError={(e) => console.log('Image error:', e)}
+                onLoad={() => console.log('Image loaded!')}
               />
 
               <div className="grid grid-cols-3 gap-4 mb-4">
