@@ -182,7 +182,11 @@ export default function AdminCheckinsPage() {
           <div
             key={checkin.id}
             className="bg-slate-800/50 rounded-2xl border border-slate-700/50 p-4 hover:bg-slate-800 transition-colors cursor-pointer"
-            onClick={() => setSelectedCheckin(checkin)}
+            onClick={() => {
+              console.log('Photo URL:', checkin.photo_url);
+              console.log('Photo SRC:', getPhotoSrc(checkin.photo_url));
+              setSelectedCheckin(checkin);
+          }}
           >
             <div className="flex gap-4">
               <img
