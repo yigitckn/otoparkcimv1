@@ -45,16 +45,36 @@ export default function AdminCheckinsPage() {
   }, [])
 
   const loadCheckins = async () => {
-    const { data, error } = await supabase
-      .from('park_checkins')
-      .select('*, parkings(name, address), profiles(full_name, email, license_plate)')
-      .order('created_at', { ascending: false })
+  const { data, error } = await supabase
+    .from('park_checkins')
+    .select('*')
+    .order('created_at', { ascending: false })
 
-    if (!error && data) {
-      setCheckins(data as any)
-    }
-    setLoading(false)
+  if (!error && data) {
+    const enrichedData = await Promise.all(data.map(async (checkin) => {
+      const { data: parking } = await supabase
+        .from('parkings')
+        .select('name, address')
+        .eq('id', checkin.parking_id)
+        .single()
+      
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name, email, license_plate')
+        .eq('id', checkin.user_id)
+        .single()
+
+      return {
+        ...checkin,
+        parking,
+        profiles: profile
+      }
+    }))
+
+    setCheckins(enrichedData)
   }
+  setLoading(false)
+}
 
   const handleApprove = async (checkin: Checkin) => {
     const points = 10
