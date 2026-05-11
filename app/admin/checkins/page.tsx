@@ -97,7 +97,7 @@ export default function AdminCheckinsPage() {
     if (userPoints) {
       const newTotal = userPoints.total_points + points
       const newApproved = userPoints.approved_checkins + 1
-      const freeParksEarned = Math.floor(newApproved / 5)
+      const freeParksEarned = Math.floor(newApproved / 10)
 
       await supabase
         .from('user_points')
