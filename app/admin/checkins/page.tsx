@@ -88,28 +88,6 @@ export default function AdminCheckinsPage() {
       })
       .eq('id', checkin.id)
 
-    const { data: userPoints } = await supabase
-      .from('user_points')
-      .select('*')
-      .eq('user_id', checkin.user_id)
-      .single()
-
-    if (userPoints) {
-      const newTotal = userPoints.total_points + points
-      const newApproved = userPoints.approved_checkins + 1
-      const freeParksEarned = Math.floor(newApproved / 10)
-
-      await supabase
-        .from('user_points')
-        .update({
-          total_points: newTotal,
-          approved_checkins: newApproved,
-          free_parks_earned: freeParksEarned,
-          updated_at: new Date().toISOString()
-        })
-        .eq('user_id', checkin.user_id)
-    }
-
     loadCheckins()
     setSelectedCheckin(null)
   }
