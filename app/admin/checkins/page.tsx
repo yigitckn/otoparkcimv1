@@ -79,7 +79,7 @@ export default function AdminCheckinsPage() {
   const handleApprove = async (checkin: Checkin) => {
     const points = 10
 
-    await supabase
+    const { error } = await supabase
       .from('park_checkins')
       .update({
         status: 'approved',
@@ -87,6 +87,12 @@ export default function AdminCheckinsPage() {
         reviewed_at: new Date().toISOString()
       })
       .eq('id', checkin.id)
+
+    if (error) {
+      console.error('Approve error:', error)
+      alert('Hata: ' + error.message)
+      return
+    }
 
     loadCheckins()
     setSelectedCheckin(null)
