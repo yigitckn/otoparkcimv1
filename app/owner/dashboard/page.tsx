@@ -200,9 +200,9 @@ export default function OwnerDashboardPage() {
         <div className="text-6xl mb-4">⏳</div>
         <h1 className="text-2xl font-bold text-gray-800 mb-2">Üyeliğiniz Onay Bekliyor</h1>
         <p className="text-gray-500 max-w-md">
-          Başvurunuz inceleniyor. Admin onayından sonra otoparkınızı
-          ekleyebilir ve yönetebilirsiniz. Genellikle 24 saat içinde
-          sonuçlandırılır.
+          Başvurunuz inceleniyor. Otoparkçım ekibi tarafından onaylandıktan
+          sonra otoparkınızı ekleyebilir ve yönetebilirsiniz.
+          Başvurunuz 12-24 saat içerisinde onaylanacaktır.
         </p>
       </div>
     )
