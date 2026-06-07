@@ -76,7 +76,7 @@ const PLANS: Plan[] = [
     ],
   },
   {
-    id: '1y',
+    id: '12m',
     name: '1 Yıllık Plan',
     duration: '12 ay',
     price: 1499,
@@ -350,7 +350,7 @@ export default function PlansPage() {
     if (!selectedPlan || !user) return
     setLoading(true)
 
-    await supabase
+    const { error } = await supabase
       .from('ownership_claims')
       .update({
         package_type: selectedPlan.id,
@@ -358,6 +358,12 @@ export default function PlansPage() {
       })
       .eq('user_id', user.id)
       .eq('claim_type', 'owner_registration')
+
+    if (error) {
+      console.error('Update error:', error)
+      setLoading(false)
+      return
+    }
 
     router.push('/owner/success')
   }
