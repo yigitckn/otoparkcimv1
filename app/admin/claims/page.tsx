@@ -192,6 +192,24 @@ function ClaimCard({ claim, processing, onApprove, onReject, onViewDocument }: {
             </div>
           </div>
 
+          {claim.package_type && (
+            <div className="flex items-center gap-2 mt-2">
+              <span className="text-xs font-semibold text-gray-500">Seçilen Paket:</span>
+              <span className="text-xs font-bold text-[#1d7adb]">
+                {claim.package_type === '1m' ? '1 Aylık Plan' :
+                 claim.package_type === '3m' ? '3 Aylık Plan' :
+                 claim.package_type === '6m' ? '6 Aylık Plan' :
+                 claim.package_type === '12m' ? '1 Yıllık Plan' :
+                 claim.package_type}
+              </span>
+              {claim.package_price && (
+                <span className="text-xs font-bold text-emerald-600">
+                  — {claim.package_price}₺
+                </span>
+              )}
+            </div>
+          )}
+
           {claim.reject_reason && (
             <div className="mt-3 p-3 bg-red-500/10 rounded-xl">
               <p className="text-red-400 text-sm">Red sebebi: {claim.reject_reason}</p>
