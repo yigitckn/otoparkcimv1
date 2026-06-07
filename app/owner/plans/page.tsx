@@ -39,7 +39,7 @@ const PLANS: Plan[] = [
       { text: 'Profil görüntülenme istatistikleri', bold: false },
       { text: 'Yol tarifi tıklama sayısı', bold: false },
       { text: 'Onaylı park kayıtlarını görüntüleme', bold: false },
-      { text: 'E-posta destek', bold: false },
+      { text: '7/24 Türkçe destek', bold: false },
     ],
   },
   {
@@ -54,7 +54,7 @@ const PLANS: Plan[] = [
     features: [
       { text: 'Otoparkınız 3 ay boyunca listede görünür', bold: false },
       { text: 'Tüm istatistikler', bold: false },
-      { text: 'Öncelikli destek', bold: false },
+      { text: '7/24 Türkçe destek', bold: false },
       { text: '%30 tasarruf', bold: true, kind: 'save' },
     ],
   },
@@ -71,7 +71,7 @@ const PLANS: Plan[] = [
       { text: 'Otoparkınız 6 ay boyunca listede görünür', bold: false },
       { text: 'Tüm istatistikler', bold: false },
       { text: '1 AY ÜCRETSİZ ÖNCELİKLİ LİSTELEME HEDİYE', bold: true, kind: 'gift', emoji: '🎁' },
-      { text: 'Öncelikli destek', bold: false },
+      { text: '7/24 Türkçe destek', bold: false },
       { text: '%64 tasarruf', bold: true, kind: 'save' },
     ],
   },
@@ -259,7 +259,7 @@ const PlanCard = ({ plan, selected, onSelect }: { plan: Plan; selected: boolean;
 
 const Trust = () => {
   const items = [
-    { icon: <ShieldIcon  className="w-[18px] h-[18px]"/>, t: 'Güvenli ödeme',      s: 'iyzico altyapısı' },
+    { icon: <ShieldIcon  className="w-[18px] h-[18px]"/>, t: 'Güvenli ödeme',      s: '' },
     { icon: <BoltIcon    className="w-[18px] h-[18px]"/>, t: 'Anında aktivasyon',   s: 'Ödeme sonrası listede' },
     { icon: <HeadsetIcon className="w-[18px] h-[18px]"/>, t: 'Türkçe destek',       s: 'Hafta içi 09:00 – 18:00' },
   ]
@@ -446,7 +446,7 @@ export default function PlansPage() {
             <div className="mt-6 flex flex-wrap items-center justify-center gap-x-7 gap-y-2 text-[12.5px] text-[#5a6c8a]">
               <span className="inline-flex items-center gap-1.5"><CheckIcon className="w-4 h-4 text-emerald-500"/> Güvenli ödeme</span>
               <span className="inline-flex items-center gap-1.5"><CheckIcon className="w-4 h-4 text-emerald-500"/> KDV dahil fiyatlar</span>
-              <span className="inline-flex items-center gap-1.5"><CheckIcon className="w-4 h-4 text-emerald-500"/> 2.400+ aktif otopark</span>
+              <span className="inline-flex items-center gap-1.5"><CheckIcon className="w-4 h-4 text-emerald-500"/> 500+ aktif otopark</span>
             </div>
           </div>
         </section>
