@@ -119,6 +119,7 @@ export default function NewParkingPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [user, setUser] = useState<any>(null)
+  const [claimStatus, setClaimStatus] = useState<string | null>(null)
   const [selectedLocation, setSelectedLocation] = useState<{lat: number, lng: number} | null>(null)
   const [mapCenter, setMapCenter] = useState(defaultCenter)
 
@@ -142,6 +143,15 @@ export default function NewParkingPage() {
       return
     }
     setUser(user)
+
+    const { data: claimData } = await supabase
+      .from('ownership_claims')
+      .select('status')
+      .eq('user_id', user.id)
+      .eq('claim_type', 'owner_registration')
+      .single()
+
+    setClaimStatus(claimData?.status ?? 'pending')
   }
 
   const getUserLocation = () => {
@@ -310,6 +320,20 @@ export default function NewParkingPage() {
     }
 
     router.push('/owner/dashboard')
+  }
+
+  if (claimStatus !== null && claimStatus !== 'approved') {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen p-8 text-center">
+        <div className="text-6xl mb-4">⏳</div>
+        <h1 className="text-2xl font-bold text-gray-800 mb-2">Üyeliğiniz Onay Bekliyor</h1>
+        <p className="text-gray-500 max-w-md">
+          Başvurunuz inceleniyor. Admin onayından sonra otoparkınızı
+          ekleyebilir ve yönetebilirsiniz. Genellikle 24 saat içinde
+          sonuçlandırılır.
+        </p>
+      </div>
+    )
   }
 
   return (

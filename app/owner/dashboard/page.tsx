@@ -37,6 +37,7 @@ export default function OwnerDashboardPage() {
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState<any>(null)
   const [updating, setUpdating] = useState<string | null>(null)
+  const [claimStatus, setClaimStatus] = useState<string | null>(null)
   
   const router = useRouter()
   const supabase = createClient()
@@ -87,7 +88,21 @@ export default function OwnerDashboardPage() {
     }
 
     setUser(user)
-    await loadData(user.id)
+
+    const { data: claimData } = await supabase
+      .from('ownership_claims')
+      .select('status')
+      .eq('user_id', user.id)
+      .eq('claim_type', 'owner_registration')
+      .single()
+
+    setClaimStatus(claimData?.status ?? 'pending')
+
+    if (claimData?.status === 'approved') {
+      await loadData(user.id)
+    } else {
+      setLoading(false)
+    }
   }
 
   const loadData = async (userId: string) => {
@@ -175,6 +190,20 @@ export default function OwnerDashboardPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-950">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500"></div>
+      </div>
+    )
+  }
+
+  if (claimStatus !== 'approved') {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen p-8 text-center">
+        <div className="text-6xl mb-4">⏳</div>
+        <h1 className="text-2xl font-bold text-gray-800 mb-2">Üyeliğiniz Onay Bekliyor</h1>
+        <p className="text-gray-500 max-w-md">
+          Başvurunuz inceleniyor. Admin onayından sonra otoparkınızı
+          ekleyebilir ve yönetebilirsiniz. Genellikle 24 saat içinde
+          sonuçlandırılır.
+        </p>
       </div>
     )
   }
