@@ -204,7 +204,7 @@ export default function OwnerRegisterPage() {
    })
     }
 
-    router.push('/owner/dashboard')
+    router.push('/owner/plans')
   }
 
   return (
