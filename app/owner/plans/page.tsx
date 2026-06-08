@@ -261,7 +261,7 @@ const Trust = () => {
   const items = [
     { icon: <ShieldIcon  className="w-[18px] h-[18px]"/>, t: 'Güvenli ödeme',      s: '' },
     { icon: <BoltIcon    className="w-[18px] h-[18px]"/>, t: 'Anında aktivasyon',   s: 'Ödeme sonrası listede' },
-    { icon: <HeadsetIcon className="w-[18px] h-[18px]"/>, t: 'Türkçe destek',       s: 'Hafta içi 09:00 – 18:00' },
+    { icon: <HeadsetIcon className="w-[18px] h-[18px]"/>, t: 'Türkçe destek',       s: '' },
   ]
   return (
     <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-4xl mx-auto">
