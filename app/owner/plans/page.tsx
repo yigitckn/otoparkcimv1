@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -125,25 +126,6 @@ const ArrowIcon = ({ className = '' }: { className?: string }) => (
   </svg>
 )
 
-const Logo = () => (
-  <div className="flex items-center gap-2.5">
-    <div
-      className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-extrabold"
-      style={{ background: 'linear-gradient(135deg, #1d7adb 0%, #4aa0eb 100%)', boxShadow: '0 10px 30px rgba(29,122,219,0.25)' }}
-    >
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
-        <path d="M5 11l1.4-4.2A2 2 0 018.3 5.4h7.4a2 2 0 011.9 1.4L19 11M5 11h14M5 11v6a1 1 0 001 1h1a1 1 0 001-1v-1h8v1a1 1 0 001 1h1a1 1 0 001-1v-6"
-              stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" strokeLinecap="round"/>
-        <circle cx="8" cy="14.5" r="1" fill="currentColor"/>
-        <circle cx="16" cy="14.5" r="1" fill="currentColor"/>
-      </svg>
-    </div>
-    <div className="leading-none">
-      <div className="text-[17px] font-extrabold tracking-tight text-[#0b1c35]">Otoparkçım</div>
-      <div className="text-[10.5px] font-semibold tracking-[0.18em] text-[#5a6c8a] mt-0.5">İŞLETME PANELİ</div>
-    </div>
-  </div>
-)
 
 const Badge = ({ badge }: { badge: Plan['badge'] }) => {
   if (!badge) return null
@@ -409,22 +391,15 @@ export default function PlansPage() {
           }}
         />
 
-        {/* NAV */}
         <header className="relative">
           <div className="max-w-6xl mx-auto px-6 lg:px-8 h-[72px] flex items-center">
-            <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center"
-                   style={{ background: 'linear-gradient(135deg, #1d7adb 0%, #0b3d8f 100%)' }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"
-                        fill="white"/>
-                  <text x="12" y="13" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#1d7adb">P</text>
-                </svg>
-              </div>
-              <span className="text-[20px] font-extrabold tracking-tight text-[#0b1c35]">
-                Otopark<span className="text-[#1d7adb]">çım</span>
-              </span>
-            </div>
+            <Image
+              src="/images/hader-otoparkcim.png"
+              alt="Otoparkçım"
+              width={160}
+              height={40}
+              style={{ objectFit: 'contain' }}
+            />
           </div>
         </header>
 
