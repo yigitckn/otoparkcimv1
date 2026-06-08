@@ -411,22 +411,19 @@ export default function PlansPage() {
 
         {/* NAV */}
         <header className="relative">
-          <div className="max-w-6xl mx-auto px-6 lg:px-8 h-[72px] flex items-center justify-between">
-            <Logo/>
-            <nav className="hidden md:flex items-center gap-7 text-[13.5px] font-semibold text-[#33476a]">
-              <Link href="/owner/dashboard" className="hover:text-[#0b1c35]">Panelim</Link>
-              <Link href="/owner/parking/new" className="hover:text-[#0b1c35]">İlanlar</Link>
-              <span className="text-[#0b1c35]">Paketler</span>
-              <a href="#" className="hover:text-[#0b1c35]">Destek</a>
-            </nav>
-            <div className="flex items-center gap-3">
-              <span className="hidden sm:inline-flex items-center gap-2 text-[12.5px] text-[#33476a] font-medium">
-                <span className="w-2 h-2 rounded-full bg-emerald-500"/>
-                Hesap aktif
-              </span>
-              <div className="w-9 h-9 rounded-full bg-[#0b1c35] text-white flex items-center justify-center text-[12px] font-bold">
-                MK
+          <div className="max-w-6xl mx-auto px-6 lg:px-8 h-[72px] flex items-center">
+            <div className="flex items-center gap-2">
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center"
+                   style={{ background: 'linear-gradient(135deg, #1d7adb 0%, #0b3d8f 100%)' }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"
+                        fill="white"/>
+                  <text x="12" y="13" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#1d7adb">P</text>
+                </svg>
               </div>
+              <span className="text-[20px] font-extrabold tracking-tight text-[#0b1c35]">
+                Otopark<span className="text-[#1d7adb]">çım</span>
+              </span>
             </div>
           </div>
         </header>
