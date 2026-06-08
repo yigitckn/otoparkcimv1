@@ -394,7 +394,7 @@ export default function PlansPage() {
         <header className="relative">
           <div className="max-w-6xl mx-auto px-6 lg:px-8 h-[72px] flex items-center">
             <Image
-              src="/images/hader-otoparkcim.png"
+              src="/images/header-otoparkcim.png"
               alt="Otoparkçım"
               width={160}
               height={40}
