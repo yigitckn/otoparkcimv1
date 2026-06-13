@@ -11,7 +11,7 @@ const featureOptions = [
   { id: 'covered', label: 'Kapalı Otopark', icon: Shield },
   { id: 'security', label: '7/24 Güvenlik', icon: Shield },
   { id: 'valet', label: 'Vale Hizmeti', icon: Car },
-  { id: 'ev_charging', label: 'Elektrikli Şarj', icon: Zap },
+  { id: 'ev_charger', label: 'Elektrikli Şarj', icon: Zap },
   { id: 'car_wash', label: 'Oto Yıkama', icon: Droplets },
   { id: 'wifi', label: 'Ücretsiz WiFi', icon: Wifi },
 ]
